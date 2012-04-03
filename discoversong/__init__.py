@@ -20,6 +20,8 @@ def printerrors(function):
   def wrapped(*a, **kw):
     try:
       return function(*a, **kw)
+    except web.Redirect:
+      raise
     except:
       traceback.print_exception(*sys.exc_info())
   return wrapped
