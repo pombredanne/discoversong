@@ -72,7 +72,7 @@ class root:
       message = ''
       if 'saved' in get_input():
         message = '  Saved your selections.'
-      
+      print 'prefs', type(result['prefs']), result['prefs']
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
                              to_address=result['address'],
