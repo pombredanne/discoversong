@@ -2,7 +2,7 @@ import traceback
 import sys
 import web
 import urllib
-import json
+from bson import loads, dumps
 
 __author__ = 'Eugene Efremov'
 
@@ -40,3 +40,16 @@ def get_input():
     return web.input()
   except:
     return web.input(_unicode=False)
+
+class BSONTranscoder(object):
+  
+  @classmethod
+  def encode(data):
+    if not isinstance(data, dict):
+      raise ValueError('BSON can only encode dictionary objects. Try calling to_dict() on the data you are passing in.')
+    return dumps(data)
+
+  @classmethod
+  def decode(string):
+    return loads(string)
+

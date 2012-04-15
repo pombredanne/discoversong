@@ -49,3 +49,19 @@ def parse(subject):
       continue
   raise ValueError('at least the unknown parser should have worked!')
 
+def parse_bool(bool_val):
+  if bool_val == True or bool_val == False:
+    return bool_val
+  
+  if len(bool_val) == 0:
+    raise ValueError('Unable to parse an empty string')
+ 
+  c = bool_val[0].upper()
+  
+  if c == 'T':
+    return True
+
+  if c == 'F':
+    return False
+
+  raise ValueError('Invalid string passed in, must pass in True/False')

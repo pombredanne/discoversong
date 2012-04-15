@@ -10,6 +10,7 @@ CREATE TABLE discoversong_user
   secret text,
   address text,
   playlist text,
+  prefs bytea,
   CONSTRAINT pk PRIMARY KEY (id )
 )
 WITH (
