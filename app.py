@@ -60,7 +60,7 @@ class root:
       
       db = get_db()
       
-      result = list(db.select('discoversong_user', what='address, playlist', where="rdio_user_id=%i" % user_id))
+      result = list(db.select('discoversong_user', what='address, playlist, prefs', where="rdio_user_id=%i" % user_id))
       if len(result) == 0:
         access_token = web.cookies().get('at')
         access_token_secret = web.cookies().get('ats')
