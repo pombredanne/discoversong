@@ -14,7 +14,7 @@ def make_unique_email():
   
   random_word = random_word[3:-2]
   
-  return '%s@discoversong.com' % random_word
+  return '%s@discoversong.com' % random_word.lower()
 
 def generate_playlist_name(existing_names):
   base_name = "discoversong's finds"
