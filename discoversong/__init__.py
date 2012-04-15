@@ -1,11 +1,20 @@
 import traceback
 import sys
 import web
+import urllib
+import json
 
 __author__ = 'Eugene Efremov'
 
-def make_unique_email(user):
-  return '%s@discoversong.com' % user['key']
+SETGETGO_WORDER = 'http://randomword.setgetgo.com/get.php'
+
+def make_unique_email():
+  
+  random_word = urllib.urlopen(SETGETGO_WORDER).read()
+  
+  random_word = random_word[3:-2]
+  
+  return '%s@discoversong.com' % random_word
 
 def generate_playlist_name(existing_names):
   base_name = "discoversong's finds"

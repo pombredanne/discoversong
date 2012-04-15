@@ -13,6 +13,7 @@ def editform(playlists, selected):
                     value=selected,
                     args=args),
       form.Button('button', value='save', html='Save'),
+      form.Button('button', value='new_name', html='I want a new email address, mine sucks or has been compromised'),
   )
   
   return editform()

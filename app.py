@@ -65,7 +65,7 @@ class root:
       if len(result) == 0:
         access_token = web.cookies().get('at')
         access_token_secret = web.cookies().get('ats')
-        db.insert('discoversong_user', rdio_user_id=user_id, address=make_unique_email(currentUser), token=access_token, secret=access_token_secret, playlist='new')
+        db.insert('discoversong_user', rdio_user_id=user_id, address=make_unique_email(), token=access_token, secret=access_token_secret, playlist='new')
         result = list(db.select('discoversong_user', what='address, playlist', where="rdio_user_id=%i" % user_id))[0]
       else:
         result = result[0]
@@ -152,7 +152,14 @@ class save:
     
       db.update('discoversong_user', where="rdio_user_id=%i" % user_id, playlist=input['playlist'])
       
-    raise web.seeother('/?saved=True') 
+      raise web.seeother('/?saved=True')
+    
+    elif action == 'new_name':
+      new_email = make_unique_email()
+      
+      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, address=new_email)
+      
+    raise web.seeother('/')
 
 class idsong:
 
