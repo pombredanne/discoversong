@@ -43,13 +43,13 @@ def get_input():
 
 class BSONTranscoder(object):
   
-  @classmethod
+  @staticmethod
   def encode(data):
     if not isinstance(data, dict):
       raise ValueError('BSON can only encode dictionary objects. Try calling to_dict() on the data you are passing in.')
     return dumps(data)
 
-  @classmethod
+  @staticmethod
   def decode(string):
     return loads(string)
 
