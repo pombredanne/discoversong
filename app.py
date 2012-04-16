@@ -23,12 +23,13 @@ import datetime
 import json
 import os
 import sys
+import traceback
 import web
 
-from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONTranscoder
+from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input
 from discoversong.db import get_db
 from discoversong.forms import editform
-from discoversong.parse import parse, parse_bool
+from discoversong.parse import parse
 from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -60,23 +61,23 @@ class root:
       
       db = get_db()
       
-      result = list(db.select('discoversong_user', what='address, playlist, prefs', where="rdio_user_id=%i" % user_id))
+      result = list(db.select('discoversong_user', what='address, playlist', where="rdio_user_id=%i" % user_id))
       if len(result) == 0:
         access_token = web.cookies().get('at')
         access_token_secret = web.cookies().get('ats')
-        db.insert('discoversong_user', rdio_user_id=user_id, address=make_unique_email(), token=access_token, secret=access_token_secret, playlist='new', prefs=BSONTranscoder.encode({}))
-        result = list(db.select('discoversong_user', what='address, playlist, prefs', where="rdio_user_id=%i" % user_id))[0]
+        db.insert('discoversong_user', rdio_user_id=user_id, address=make_unique_email(), token=access_token, secret=access_token_secret, playlist='new')
+        result = list(db.select('discoversong_user', what='address, playlist', where="rdio_user_id=%i" % user_id))[0]
       else:
         result = result[0]
       
       message = ''
       if 'saved' in get_input():
         message = '  Saved your selections.'
-      print 'prefs', type(result['prefs']), result['prefs'][:]
+      
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
                              to_address=result['address'],
-                             editform=editform(myPlaylists, result['playlist'], BSONTranscoder.decode(result['prefs']))
+                             editform=editform(myPlaylists, result['playlist'])
                             )
     else:
       return render.loggedout()
@@ -137,12 +138,6 @@ class logout:
 
 class save:
   
-  def get_prefs_from_input(self, input):
-    prefs = {}
-    if 'or_search' in input.keys():
-      prefs['or_search'] = parse_bool(input['or_search'])
-    return prefs
-  
   @printerrors
   def GET(self):
     
@@ -155,12 +150,11 @@ class save:
     
     if action == 'save':
     
-      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, playlist=input['playlist'], prefs=self.get_prefs_from_input(input))
+      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, playlist=input['playlist'])
       
       raise web.seeother('/?saved=True')
     
     elif action == 'new_name':
-      
       new_email = make_unique_email()
       
       db.update('discoversong_user', where="rdio_user_id=%i" % user_id, address=new_email)
