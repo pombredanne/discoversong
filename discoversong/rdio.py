@@ -8,16 +8,21 @@ from contrib.rdio import Rdio
 
 from discoversong.includes import *
 
+def get_consumer_key():
+  if os.environ.has_key('RDIO_CONSUMER_KEY'):
+    return os.environ['RDIO_CONSUMER_KEY']
+  return RDIO_CONSUMER_KEY
+
+def get_consumer_secret():
+  if os.environ.has_key('RDIO_CONSUMER_SECRET'):
+    return os.environ['RDIO_CONSUMER_SECRET']
+  return RDIO_CONSUMER_SECRET
+
 def get_rdio():
-  if os.environ.has_key('RDIO_CONSUMER_KEY') and os.environ.has_key('RDIO_CONSUMER_SECRET'):
-    key, secret = os.environ['RDIO_CONSUMER_KEY'], os.environ['RDIO_CONSUMER_SECRET']
-  else:
-    key = RDIO_CONSUMER_KEY
-    secret = RDIO_CONSUMER_SECRET
-  return Rdio((key, secret))
+  return Rdio((get_consumer_key(), get_consumer_secret()))
 
 def get_rdio_with_access(token, secret):
-  return Rdio((os.environ['RDIO_CONSUMER_KEY'], os.environ['RDIO_CONSUMER_SECRET']), (token, secret))
+  return Rdio((get_consumer_key(), get_consumer_secret()), (token, secret))
 
 def get_rdio_and_current_user(access_token=NOT_SPECIFIED, access_token_secret=NOT_SPECIFIED):
     
