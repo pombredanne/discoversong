@@ -1,9 +1,11 @@
 import os
 import web
 
+from discoversong.includes import *
+
 def get_db():
 
-  dburl = os.environ['HEROKU_SHARED_POSTGRESQL_JADE_URL']
+  dburl = os.environ['HEROKU_SHARED_POSTGRESQL_JADE_URL'] if os.environ.has_key('HEROKU_SHARED_POSTGRESQL_JADE_URL') else HEROKU_SHARED_POSTGRESQL_JADE_URL
   
   db = web.database(dburl=dburl,
                     dbn='postgres',

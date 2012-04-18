@@ -9,7 +9,12 @@ from contrib.rdio import Rdio
 from discoversong.includes import *
 
 def get_rdio():
-  return Rdio((os.environ['RDIO_CONSUMER_KEY'], os.environ['RDIO_CONSUMER_SECRET']))
+  if os.environ.has_key('RDIO_CONSUMER_KEY') and os.environ.has_key('RDIO_CONSUMER_SECRET'):
+    key, secret = os.environ['RDIO_CONSUMER_KEY'], os.environ['RDIO_CONSUMER_SECRET']
+  else:
+    key = RDIO_CONSUMER_KEY
+    secret = RDIO_CONSUMER_SECRET
+  return Rdio((key, secret))
 
 def get_rdio_with_access(token, secret):
   return Rdio((os.environ['RDIO_CONSUMER_KEY'], os.environ['RDIO_CONSUMER_SECRET']), (token, secret))
