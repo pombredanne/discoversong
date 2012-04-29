@@ -194,7 +194,10 @@ class save:
     db = get_db()
     
     if action == 'save':
-      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(self.get_prefs_from_input(input)))
+      prefs = BSONPostgresSerializer.to_dict(list(db.select('discoversong_user', what='prefs', where="rdio_user_id=%i" % user_id))[0]['prefs'])
+      new_prefs = self.get_prefs_from_input(input)
+      prefs.update(new_prefs)
+      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
       
       raise web.seeother('/?saved=True')
     
