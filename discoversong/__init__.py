@@ -58,3 +58,11 @@ class BSONPostgresSerializer(object):
       return loads(string)
     except:
       raise ValueError('Expected a string or buffer.')
+
+class Enum:
+  pass
+
+class Preferences(Enum):
+  NoOrSearch = '&'
+  OneResult = '1'
+  PlaylistToSaveTo = 'p'

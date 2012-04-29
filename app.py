@@ -26,7 +26,7 @@ import sys
 import web
 import logging
 
-from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer
+from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences
 from discoversong.db import get_db
 from discoversong.forms import editform
 from discoversong.parse import parse
@@ -178,7 +178,9 @@ class save:
   def get_prefs_from_input(self, input):
     prefs = {}
     
-    prefs['or_search'] = 'or_search' in input.keys()
+    prefs[Preferences.NoOrSearch] = Preferences.NoOrSearch in input.keys()
+    prefs[Preferences.OneResult] = Preferences.OneResult in input.keys()
+    prefs[Preferences.PlaylistToSaveTo] = input[Preferences.PlaylistToSaveTo]
     
     return prefs
   
@@ -240,7 +242,9 @@ class idsong:
         
         prefs = BSONPostgresSerializer.to_dict(result['prefs'])
         
-        or_search = prefs.get('or_search', False)
+        or_search = prefs.get(Preferences.NoOrSearch, False)
+        one_result = prefs.get(Preferences.OneResult, False)
+        playlist_key = prefs[Preferences.PlaylistToSaveTo]
         
         never_or = 'false' if or_search else 'true'
         
@@ -266,6 +270,9 @@ class idsong:
             
             track_key = possible_hit['key']
             track_keys.append(track_key)
+            
+            if one_result:
+              break
         
         print 'found tracks', track_keys
         
