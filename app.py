@@ -61,7 +61,7 @@ class root:
       
       db = get_db()
       
-      result = list(db.select('discoversong_user', what='address, playlist, prefs, token, secret', where="rdio_user_id=%i" % user_id))
+      result = list(db.select('discoversong_user', what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))
       
       if len(result) == 0:
         access_token = web.cookies().get('at')
@@ -72,10 +72,9 @@ class root:
           address=make_unique_email(),
           token=access_token,
           secret=access_token_secret,
-          playlist='new',
           prefs=BSONPostgresSerializer.from_dict({}))
         
-        result = list(db.select('discoversong_user', what='address, playlist, prefs, token, secret', where="rdio_user_id=%i" % user_id))[0]
+        result = list(db.select('discoversong_user', what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))[0]
       else:
         result = result[0]
         
@@ -101,7 +100,7 @@ class root:
           if fields_need_update(['prefs']):
             db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
           
-          result = list(db.select('discoversong_user', what='address, playlist, prefs', where="rdio_user_id=%i" % user_id))[0]
+          result = list(db.select('discoversong_user', what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
       
       message = ''
       if 'saved' in get_input():
@@ -110,11 +109,11 @@ class root:
       if not result.has_key('prefs') or not result['prefs']:
         logging.info('resetting preferences')
         db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
-        result = list(db.select('discoversong_user', what='address, playlist, prefs', where="rdio_user_id=%i" % user_id))[0]
+        result = list(db.select('discoversong_user', what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
                              to_address=result['address'],
-                             editform=editform(myPlaylists, result['playlist'], BSONPostgresSerializer.to_dict(result['prefs']))
+                             editform=editform(myPlaylists, BSONPostgresSerializer.to_dict(result['prefs']))
                             )
     else:
       return render.loggedout()
@@ -195,7 +194,7 @@ class save:
     db = get_db()
     
     if action == 'save':
-      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, playlist=input['playlist'], prefs=BSONPostgresSerializer.from_dict(self.get_prefs_from_input(input)))
+      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(self.get_prefs_from_input(input)))
       
       raise web.seeother('/?saved=True')
     
@@ -222,7 +221,7 @@ class idsong:
     
     for to_address in to_addresses:
       
-      lookup = db.select('discoversong_user', what='rdio_user_id, playlist, token, secret, prefs', where="address='%s'" % to_address)
+      lookup = db.select('discoversong_user', what='rdio_user_id, token, secret, prefs', where="address='%s'" % to_address)
       
       if len(lookup) == 1:
         result = lookup[0]
@@ -276,8 +275,6 @@ class idsong:
         
         print 'found tracks', track_keys
         
-        playlist_key = result['playlist']
-        
         if playlist_key in ['new', 'alwaysnew']:
           
           p_names = [playlist['name'] for playlist in rdio.call('getPlaylists')['result']['owned']]
@@ -296,7 +293,10 @@ class idsong:
             print 'setting', new_key, 'as the playlist to use next time'
             
             user_id = int(current_user['key'][1:])
-            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, playlist=new_key)
+            
+            prefs[Preferences.PlaylistToSaveTo] = new_key
+            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
+          
           # else leave 'alwaysnew' to repeat this behavior every time
         
         else:

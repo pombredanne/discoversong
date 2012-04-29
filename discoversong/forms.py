@@ -1,7 +1,7 @@
 from web import form
 from discoversong import Preferences
 
-def editform(playlists, selected, prefs):
+def editform(playlists, prefs):
   
   new_playlist = ('new', '*** create a new playlist')
   always_new = ('alwaysnew', '*** always create a new playlist')
