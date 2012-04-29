@@ -23,10 +23,10 @@ import datetime
 import json
 import os
 import sys
-import traceback
 import web
+import logging
 
-from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input
+from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer
 from discoversong.db import get_db
 from discoversong.forms import editform
 from discoversong.parse import parse
@@ -61,23 +61,60 @@ class root:
       
       db = get_db()
       
-      result = list(db.select('discoversong_user', what='address, playlist', where="rdio_user_id=%i" % user_id))
+      result = list(db.select('discoversong_user', what='address, playlist, prefs, token, secret', where="rdio_user_id=%i" % user_id))
+      
       if len(result) == 0:
         access_token = web.cookies().get('at')
         access_token_secret = web.cookies().get('ats')
-        db.insert('discoversong_user', rdio_user_id=user_id, address=make_unique_email(), token=access_token, secret=access_token_secret, playlist='new')
-        result = list(db.select('discoversong_user', what='address, playlist', where="rdio_user_id=%i" % user_id))[0]
+        
+        db.insert('discoversong_user',
+          rdio_user_id=user_id,
+          address=make_unique_email(),
+          token=access_token,
+          secret=access_token_secret,
+          playlist='new',
+          prefs=BSONPostgresSerializer.from_dict({}))
+        
+        result = list(db.select('discoversong_user', what='address, playlist, prefs, token, secret', where="rdio_user_id=%i" % user_id))[0]
       else:
         result = result[0]
+        
+        def none_or_empty(strg):
+          return strg is None or strg == ''
+        
+        def fields_need_update(field_names):
+          for field in field_names:
+            if not result.has_key(field):
+              return True
+            if none_or_empty(result[field]):
+              return True
+          return False
+        
+        if fields_need_update(['token', 'secret', 'address', 'prefs']):
+          
+          if fields_need_update(['token', 'secret']):
+            access_token = web.cookies().get('at')
+            access_token_secret = web.cookies().get('ats')
+            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, secret=access_token_secret, token=access_token)
+          if fields_need_update(['address']):
+            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, address=make_unique_email())
+          if fields_need_update(['prefs']):
+            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
+          
+          result = list(db.select('discoversong_user', what='address, playlist, prefs', where="rdio_user_id=%i" % user_id))[0]
       
       message = ''
       if 'saved' in get_input():
         message = '  Saved your selections.'
       
+      if not result.has_key('prefs') or not result['prefs']:
+        logging.info('resetting preferences')
+        db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
+        result = list(db.select('discoversong_user', what='address, playlist, prefs', where="rdio_user_id=%i" % user_id))[0]
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
                              to_address=result['address'],
-                             editform=editform(myPlaylists, result['playlist'])
+                             editform=editform(myPlaylists, result['playlist'], BSONPostgresSerializer.to_dict(result['prefs']))
                             )
     else:
       return render.loggedout()
@@ -138,6 +175,13 @@ class logout:
 
 class save:
   
+  def get_prefs_from_input(self, input):
+    prefs = {}
+    
+    prefs['or_search'] = 'or_search' in input.keys()
+    
+    return prefs
+  
   @printerrors
   def GET(self):
     
@@ -149,12 +193,12 @@ class save:
     db = get_db()
     
     if action == 'save':
-    
-      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, playlist=input['playlist'])
+      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, playlist=input['playlist'], prefs=BSONPostgresSerializer.from_dict(self.get_prefs_from_input(input)))
       
       raise web.seeother('/?saved=True')
     
     elif action == 'new_name':
+      
       new_email = make_unique_email()
       
       db.update('discoversong_user', where="rdio_user_id=%i" % user_id, address=new_email)
@@ -176,7 +220,7 @@ class idsong:
     
     for to_address in to_addresses:
       
-      lookup = db.select('discoversong_user', what='rdio_user_id, playlist, token, secret', where="address='%s'" % to_address)
+      lookup = db.select('discoversong_user', what='rdio_user_id, playlist, token, secret, prefs', where="address='%s'" % to_address)
       
       if len(lookup) == 1:
         result = lookup[0]
@@ -194,7 +238,16 @@ class idsong:
         
         print 'parsed artist', artist, 'title', title
         
-        search_result = rdio.call('search', {'query': ' '.join([title, artist]), 'types': 'Track'})
+        prefs = BSONPostgresSerializer.to_dict(result['prefs'])
+        
+        or_search = prefs.get('or_search', False)
+        
+        never_or = 'false' if or_search else 'true'
+        
+        if never_or:
+          print 'searching strictly, no fallback to or'
+        
+        search_result = rdio.call('search', {'query': ' '.join([title, artist]), 'types': 'Track', 'never_or': never_or})
         
         track_keys = []
         name_artist_pairs_found = {}

@@ -5,3 +5,4 @@ gunicorn==0.14.2
 psycopg2==2.4.5
 web.py==0.36
 wsgiref==0.1.2
+bson==0.3.3

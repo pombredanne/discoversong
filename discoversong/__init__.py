@@ -1,8 +1,9 @@
 import traceback
 import sys
+import psycopg2
 import web
 import urllib
-import json
+from bson import loads, dumps
 
 __author__ = 'Eugene Efremov'
 
@@ -40,3 +41,20 @@ def get_input():
     return web.input()
   except:
     return web.input(_unicode=False)
+
+class BSONPostgresSerializer(object):
+  
+  @staticmethod
+  def from_dict(data):
+    if not isinstance(data, dict):
+      raise ValueError('Need a dictionary object.')
+    return psycopg2.Binary(dumps(data))
+
+  @staticmethod
+  def to_dict(string):
+    try:
+      if not isinstance(string, basestring):
+        return loads(str(string))
+      return loads(string)
+    except:
+      raise ValueError('Expected a string or buffer.')

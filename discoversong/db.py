@@ -14,4 +14,3 @@ def get_db():
                     pw='4KBnjLB1n5wbuvzNB4p7DyQEpF',
                     db='vivid_winter_30977')
   return db
-
