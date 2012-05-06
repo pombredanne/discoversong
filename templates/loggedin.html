@@ -1,4 +1,4 @@
-$def with (name, message, to_address, editform, env_message, admin)
+$def with (name, message, to_address, editform, env_message)
 <html>
   <head>
     <title>discoversong</title>
@@ -31,7 +31,6 @@ $def with (name, message, to_address, editform, env_message, admin)
     </p>
     <form action="/save">
     $:editform.render()
-    <font style="color: red;">$:admin.render()</font>
     </form>
     <a href="/logout">Log out of Rdio</a>
     $:env_message

@@ -42,6 +42,7 @@ urls = (
   '/logout', 'logout',
   '/save', 'save',
   '/idsong', 'idsong',
+  '/admin', 'admin',
 )
 
 app = web.application(urls, globals())
@@ -125,10 +126,44 @@ class root:
                              message=message,
                              to_address=result['address'],
                              editform=editform(myPlaylists, BSONPostgresSerializer.to_dict(result['prefs'])),
-                             env_message=get_environment_message(),
-                             admin=get_admin_content(user_id in config.ADMIN_USERS))
+                             env_message=get_environment_message())
     else:
       return render.loggedout(env_message=get_environment_message())
+
+class admin:
+  
+  @printerrors
+  def GET(self):
+    
+    rdio, currentUser = get_rdio_and_current_user()
+    
+    if rdio and currentUser:
+      user_id = int(currentUser['key'][1:])
+      
+      if user_id in config.ADMIN_USERS:
+        
+        input = get_input()
+        
+        if 'button' in input.keys():
+          action = input['button']
+          db = get_db()
+          
+          if action == 'doitnow_go_on_killme':
+            
+            if user_id in config.ADMIN_USERS:
+              db.delete(USER_TABLE, where="rdio_user_id=%i" % user_id)
+          
+          elif action == 'clear_preferences':
+            if user_id in config.ADMIN_USERS:
+              db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
+          
+          raise web.seeother('/admin')
+        else:
+          admin=get_admin_content()
+          
+          return render.admin(env_message=get_environment_message(), admin=admin)
+      
+    raise web.seeother('/')
 
 class login:
   
@@ -218,15 +253,6 @@ class save:
       new_email = make_unique_email()
       
       db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=new_email)
-    
-    elif action == 'doitnow_go_on_killme':
-      
-      if user_id in config.ADMIN_USERS:
-        db.delete(USER_TABLE, where="rdio_user_id=%i" % user_id)
-    
-    elif action == 'clear_preferences':
-      if user_id in config.ADMIN_USERS:
-        db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
     
     raise web.seeother('/')
 
