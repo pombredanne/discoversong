@@ -26,4 +26,26 @@ def editform(playlists, prefs):
   )
   
   return editform()
-    
+
+class Label(form.Input):
+    def is_hidden(self):
+        return False
+        
+    def get_type(self):
+        return 'hidden'
+
+def get_admin_content(is_admin):
+  
+  fields = tuple()
+  
+  if is_admin:
+    db = get_db()
+    user_count = db.select(USER_TABLE, what='count(*)')[0]['count']
+    fields += (Label(name='', description='ADMIN'),)
+    fields += (Label(name='', description='User Count: %i' % user_count),)
+    fields += (form.Button(name='button', value='clear_preferences', html='clear my preferences'),)
+    fields += (form.Button(name='button', value='doitnow_go_on_killme', html='delete my user row'),)
+  
+  adminform = form.Form(*fields)
+  
+  return adminform()

@@ -27,9 +27,9 @@ import web
 import logging
 import config
 
-from discoversong.forms import editform
 from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message
 from discoversong.db import get_db, USER_TABLE
+from discoversong.forms import editform, get_admin_content
 from discoversong.parse import parse
 from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access
 
@@ -116,7 +116,8 @@ class root:
                              message=message,
                              to_address=result['address'],
                              editform=editform(myPlaylists, BSONPostgresSerializer.to_dict(result['prefs'])),
-                             env_message=get_environment_message())
+                             env_message=get_environment_message(),
+                             admin=get_admin_content(user_id in config.ADMIN_USERS))
     else:
       return render.loggedout(env_message=get_environment_message())
 
@@ -208,7 +209,16 @@ class save:
       new_email = make_unique_email()
       
       db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=new_email)
+    
+    elif action == 'doitnow_go_on_killme':
       
+      if user_id in config.ADMIN_USERS:
+        db.delete(USER_TABLE, where="rdio_user_id=%i" % user_id)
+    
+    elif action == 'clear_preferences':
+      if user_id in config.ADMIN_USERS:
+        db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
+    
     raise web.seeother('/')
 
 class idsong:
