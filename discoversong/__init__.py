@@ -4,10 +4,18 @@ import psycopg2
 import web
 import urllib
 from bson import loads, dumps
+import config
 
 __author__ = 'Eugene Efremov'
 
 SETGETGO_WORDER = 'http://randomword.setgetgo.com/get.php'
+
+def get_environment_message():
+  
+  from discoversong.db import MASTER_PROD_DB_URL, MASTER_STAGE_DB_URL
+  db_message = 'PROD!!!' if config.DB_URL_NAME == MASTER_PROD_DB_URL else 'staging' if config.DB_URL_NAME == MASTER_STAGE_DB_URL else 'other'
+
+  return ('%s + %s' % (config.ENVIRONMENT, db_message)) if config.ENVIRONMENT != 'production' else ''
 
 def make_unique_email():
   
@@ -15,7 +23,9 @@ def make_unique_email():
   
   random_word = random_word[3:-2]
   
-  return '%s@discoversong.com' % random_word.lower()
+  subdomain = '' if config.ENVIRONMENT == 'production' else 'test.'
+  
+  return '%s@%sdiscoversong.com' % (random_word.lower(), subdomain)
 
 def generate_playlist_name(existing_names):
   base_name = "discoversong's finds"

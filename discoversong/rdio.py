@@ -6,23 +6,15 @@ import web
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from contrib.rdio import Rdio
 
-from discoversong.includes import *
+from discoversong import NOT_SPECIFIED
 
-def get_consumer_key():
-  if os.environ.has_key('RDIO_CONSUMER_KEY'):
-    return os.environ['RDIO_CONSUMER_KEY']
-  return RDIO_CONSUMER_KEY
-
-def get_consumer_secret():
-  if os.environ.has_key('RDIO_CONSUMER_SECRET'):
-    return os.environ['RDIO_CONSUMER_SECRET']
-  return RDIO_CONSUMER_SECRET
+import config
 
 def get_rdio():
-  return Rdio((get_consumer_key(), get_consumer_secret()))
+  return Rdio((config.RDIO_CONSUMER_KEY, config.RDIO_CONSUMER_SECRET))
 
 def get_rdio_with_access(token, secret):
-  return Rdio((get_consumer_key(), get_consumer_secret()), (token, secret))
+  return Rdio((config.RDIO_CONSUMER_KEY, config.RDIO_CONSUMER_SECRET), (token, secret))
 
 def get_rdio_and_current_user(access_token=NOT_SPECIFIED, access_token_secret=NOT_SPECIFIED):
     

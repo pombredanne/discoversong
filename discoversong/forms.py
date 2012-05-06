@@ -1,5 +1,6 @@
 from web import form
 from discoversong import Preferences
+from discoversong.db import get_db, USER_TABLE
 
 def editform(playlists, prefs):
   

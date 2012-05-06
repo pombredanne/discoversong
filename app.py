@@ -25,10 +25,11 @@ import os
 import sys
 import web
 import logging
+import config
 
-from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences
-from discoversong.db import get_db
 from discoversong.forms import editform
+from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message
+from discoversong.db import get_db, USER_TABLE
 from discoversong.parse import parse
 from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access
 
@@ -61,20 +62,20 @@ class root:
       
       db = get_db()
       
-      result = list(db.select('discoversong_user', what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))
+      result = list(db.select(USER_TABLE, what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))
       
       if len(result) == 0:
         access_token = web.cookies().get('at')
         access_token_secret = web.cookies().get('ats')
         
-        db.insert('discoversong_user',
+        db.insert(USER_TABLE,
           rdio_user_id=user_id,
           address=make_unique_email(),
           token=access_token,
           secret=access_token_secret,
           prefs=BSONPostgresSerializer.from_dict({}))
         
-        result = list(db.select('discoversong_user', what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))[0]
+        result = list(db.select(USER_TABLE, what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))[0]
       else:
         result = result[0]
         
@@ -94,13 +95,13 @@ class root:
           if fields_need_update(['token', 'secret']):
             access_token = web.cookies().get('at')
             access_token_secret = web.cookies().get('ats')
-            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, secret=access_token_secret, token=access_token)
+            db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, secret=access_token_secret, token=access_token)
           if fields_need_update(['address']):
-            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, address=make_unique_email())
+            db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=make_unique_email())
           if fields_need_update(['prefs']):
-            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
+            db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
           
-          result = list(db.select('discoversong_user', what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
+          result = list(db.select(USER_TABLE, what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
       
       message = ''
       if 'saved' in get_input():
@@ -108,8 +109,9 @@ class root:
       
       if not result.has_key('prefs') or not result['prefs']:
         logging.info('resetting preferences')
-        db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
-        result = list(db.select('discoversong_user', what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
+        db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
+        result = list(db.select(USER_TABLE, what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
+      
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
                              to_address=result['address'],
@@ -194,10 +196,10 @@ class save:
     db = get_db()
     
     if action == 'save':
-      prefs = BSONPostgresSerializer.to_dict(list(db.select('discoversong_user', what='prefs', where="rdio_user_id=%i" % user_id))[0]['prefs'])
+      prefs = BSONPostgresSerializer.to_dict(list(db.select(USER_TABLE, what='prefs', where="rdio_user_id=%i" % user_id))[0]['prefs'])
       new_prefs = self.get_prefs_from_input(input)
       prefs.update(new_prefs)
-      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
+      db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
       
       raise web.seeother('/?saved=True')
     
@@ -205,7 +207,7 @@ class save:
       
       new_email = make_unique_email()
       
-      db.update('discoversong_user', where="rdio_user_id=%i" % user_id, address=new_email)
+      db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=new_email)
       
     raise web.seeother('/')
 
@@ -224,7 +226,7 @@ class idsong:
     
     for to_address in to_addresses:
       
-      lookup = db.select('discoversong_user', what='rdio_user_id, token, secret, prefs', where="address='%s'" % to_address)
+      lookup = db.select(USER_TABLE, what='rdio_user_id, token, secret, prefs', where="address='%s'" % to_address)
       
       if len(lookup) == 1:
         result = lookup[0]
@@ -298,7 +300,7 @@ class idsong:
             user_id = int(current_user['key'][1:])
             
             prefs[Preferences.PlaylistToSaveTo] = new_key
-            db.update('discoversong_user', where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
+            db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
           
           # else leave 'alwaysnew' to repeat this behavior every time
         
