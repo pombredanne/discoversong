@@ -73,6 +73,9 @@ class Enum:
   pass
 
 class Preferences(Enum):
-  NoOrSearch = '&'
-  OneResult = '1'
-  PlaylistToSaveTo = 'p'
+  NoOrSearch = 'nor'
+  OneResult = 'one'
+  PlaylistToSaveTo = 'ply'
+
+NOT_SPECIFIED = object()
+
