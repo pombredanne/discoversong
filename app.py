@@ -48,6 +48,12 @@ app = web.application(urls, globals())
 
 render = web.template.render('templates/')
 
+def not_allowed(user_id):
+  if len(config.WHITELIST_USERS) > 0:
+    if user_id not in config.WHITELIST_USERS:
+      return True
+  return False
+
 class root:
   
   @printerrors
@@ -57,6 +63,9 @@ class root:
     
     if rdio and currentUser:
       user_id = int(currentUser['key'][1:])
+      
+      if not_allowed(user_id):
+        raise web.seeother('/logout')
       
       myPlaylists = rdio.call('getPlaylists')['result']['owned']
       
