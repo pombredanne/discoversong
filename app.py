@@ -115,10 +115,10 @@ class root:
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
                              to_address=result['address'],
-                             editform=editform(myPlaylists, BSONPostgresSerializer.to_dict(result['prefs']))
-                            )
+                             editform=editform(myPlaylists, BSONPostgresSerializer.to_dict(result['prefs'])),
+                             env_message=get_environment_message())
     else:
-      return render.loggedout()
+      return render.loggedout(env_message=get_environment_message())
 
 class login:
   
