@@ -8,8 +8,18 @@ CREATE TABLE discodb.discoversong_user
   secret text,
   address text,
   prefs bytea,
+  emails bigint,
+  searches bigint,
+  songs bigint,
+  last_use date,
   CONSTRAINT pk PRIMARY KEY (id )
-)
-WITH (
-  OIDS=FALSE
 );
+
+CREATE TABLE discodb.stats
+(
+  emails bigint,
+  searches bigint,
+  songs bigint,
+  visits bigint
+);
+

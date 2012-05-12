@@ -24,6 +24,7 @@ def get_db(dbname=config.DB_URL_NAME):
   return db
 
 USER_TABLE = 'discodb.discoversong_user'
+STATS_TABLE = 'discodb.stats'
 
 MASTER_PROD_DB_URL = 'HEROKU_POSTGRESQL_COBALT_URL'
 

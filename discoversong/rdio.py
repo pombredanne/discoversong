@@ -34,9 +34,9 @@ def get_rdio_and_current_user(access_token=NOT_SPECIFIED, access_token_secret=NO
       # this almost certainly means that authentication has been revoked for the app. log out.
       raise web.seeother('/logout')
     
-    return rdio, currentUser
+    return rdio, currentUser, int(currentUser['key'][1:])
   
   else:
     
-    return None, None
+    return None, None, None
 

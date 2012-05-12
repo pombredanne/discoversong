@@ -1,6 +1,6 @@
 from web import form
 from discoversong import Preferences
-from discoversong.db import get_db, USER_TABLE
+from discoversong.db import get_db, USER_TABLE, STATS_TABLE
 
 def editform(playlists, prefs):
   
@@ -40,11 +40,16 @@ def get_admin_content():
   
   db = get_db()
   user_count = db.select(USER_TABLE, what='count(*)')[0]['count']
+  
+  stats = db.select(STATS_TABLE, what='emails, searches, songs, visits')[0]
   fields += (Label(name='', description='ADMIN'),)
   fields += (Label(name='', description='User Count: %i' % user_count),)
   fields += (form.Button(name='button', value='clear_preferences', html='clear my preferences'),)
   fields += (form.Button(name='button', value='doitnow_go_on_killme', html='delete my user row'),)
-  
+  fields += (Label(name='', description='Visits: %i' % stats['visits']),)
+  fields += (Label(name='', description='Emails: %i' % stats['emails']),)
+  fields += (Label(name='', description='Searches: %i' % stats['searches']),)
+  fields += (Label(name='', description='Songs: %i' % stats['songs']),)
   adminform = form.Form(*fields)
   
   return adminform()

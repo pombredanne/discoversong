@@ -27,7 +27,7 @@ import web
 import logging
 import config
 
-from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message
+from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message, stats
 from discoversong.db import get_db, USER_TABLE
 from discoversong.forms import editform, get_admin_content
 from discoversong.parse import parse
@@ -43,6 +43,7 @@ urls = (
   '/save', 'save',
   '/idsong', 'idsong',
   '/admin', 'admin',
+  '/admin/users', 'users',
 )
 
 app = web.application(urls, globals())
@@ -60,10 +61,9 @@ class root:
   @printerrors
   def GET(self):
     
-    rdio, currentUser = get_rdio_and_current_user()
+    rdio, currentUser, user_id = get_rdio_and_current_user()
     
     if rdio and currentUser:
-      user_id = int(currentUser['key'][1:])
       
       if not_allowed(user_id):
         raise web.seeother('/logout')
@@ -113,6 +113,8 @@ class root:
           
           result = list(db.select(USER_TABLE, what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
       
+      stats.visited(user_id)
+      
       message = ''
       if 'saved' in get_input():
         message = '  Saved your selections.'
@@ -135,10 +137,9 @@ class admin:
   @printerrors
   def GET(self):
     
-    rdio, currentUser = get_rdio_and_current_user()
+    rdio, currentUser, user_id = get_rdio_and_current_user()
     
     if rdio and currentUser:
-      user_id = int(currentUser['key'][1:])
       
       if user_id in config.ADMIN_USERS:
         
@@ -163,6 +164,24 @@ class admin:
           
           return render.admin(env_message=get_environment_message(), admin=admin)
       
+    raise web.seeother('/')
+
+class users:
+  
+  @printerrors
+  def GET(self):
+    rdio, currentUser, user_id = get_rdio_and_current_user()
+    
+    if rdio and currentUser:
+      
+      if user_id in config.ADMIN_USERS:
+        
+        db = get_db()
+        
+        users = db.select(USER_TABLE, what='rdio_user_id, last_use, emails, searches, songs')
+        
+        return render.admin_users(env_message=get_environment_message(), users=users)
+    
     raise web.seeother('/')
 
 class login:
@@ -236,8 +255,7 @@ class save:
     input = get_input()
     action = input['button']
     
-    rdio, currentUser = get_rdio_and_current_user()
-    user_id = int(currentUser['key'][1:])
+    rdio, currentUser, user_id = get_rdio_and_current_user()
     db = get_db()
     
     if action == 'save':
@@ -279,13 +297,19 @@ class idsong:
         access_token = str(result['token'])
         access_token_secret = str(result['secret'])
         
-        rdio, current_user = get_rdio_and_current_user(access_token=access_token, access_token_secret=access_token_secret)
+        rdio, current_user, user_id = get_rdio_and_current_user(access_token=access_token, access_token_secret=access_token_secret)
         
         print 'found user', current_user['username']
         
+        stats.got_email(user_id)
+        
         subject = input['subject']
         
-        title, artist = parse(subject)
+        try:
+          title, artist = parse(subject)
+        except Exception, e:
+          print str(e), e.__dict__
+          return None
         
         print 'parsed artist', artist, 'title', title
         
@@ -300,6 +324,7 @@ class idsong:
         if never_or:
           print 'searching strictly, no fallback to or'
         
+        stats.made_search(user_id)
         search_result = rdio.call('search', {'query': ' '.join([title, artist]), 'types': 'Track', 'never_or': never_or})
         
         track_keys = []
@@ -342,8 +367,6 @@ class idsong:
             
             print 'setting', new_key, 'as the playlist to use next time'
             
-            user_id = int(current_user['key'][1:])
-            
             prefs[Preferences.PlaylistToSaveTo] = new_key
             db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
           
@@ -351,6 +374,8 @@ class idsong:
         
         else:
           rdio.call('addToPlaylist', {'playlist': playlist_key, 'tracks': ', '.join(track_keys)})
+        
+        stats.found_songs(user_id, len(track_keys))
     
     return None
 
