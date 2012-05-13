@@ -5,27 +5,11 @@ import config
 
 def get_db(dbname=config.DB_URL_NAME):
   
-  print 'get_db', dbname
-  
   dburl = os.environ[dbname]
-  
-  print 'dburl', dburl
-  
-  dbn, dburl = dburl.split('://')
-  
-  print 'dbn', dbn, 'dburl', dburl
-  
-  dbuser, dbpw_host, port_etc = dburl.split(':')
-  
-  print 'dbuser', dbuser, 'dbpw_host', dbpw_host, 'port_etc', port_etc
-  
+  dbn, remainder = dburl.split('://')
+  dbuser, dbpw_host, port_dbname = remainder.split(':')
   dbpw, host = dbpw_host.split('@')
-  
-  print 'dbpw', dbpw, 'host', host
-  
-  port, db_name = port_etc.split('/')
-  
-  print 'port', port, 'db_name', db_name
+  port, db_name = port_dbname.split('/')
   
   db = web.database(dburl=dburl,
                     dbn=dbn,
