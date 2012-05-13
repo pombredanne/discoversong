@@ -4,11 +4,11 @@ import web
 import config
 
 def get_db(dbname=config.DB_URL_NAME):
-  
+  print 'get_db', dbname
   dburl = os.environ[dbname]
-  
+  print dburl
   dbn, dburl = dburl.split('://')
-  
+  print dbn, dburl
   dbuser, dburl = dburl.split(':')
   
   dbpw, dburl = dburl.split('@')
