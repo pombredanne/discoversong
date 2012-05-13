@@ -9,12 +9,14 @@ def get_db(dbname=config.DB_URL_NAME):
   print dburl
   dbn, dburl = dburl.split('://')
   print dbn, dburl
-  dbuser, dburl = dburl.split(':')
-  
+  dbuser, dburl, port_etc = dburl.split(':')
+  print dbuser, dburl, port_etc
+  dburl = dburl + ':' + port_etc
+  print dburl
   dbpw, dburl = dburl.split('@')
-  
+  print dbpw, dburl
   host, db_name = dburl.split('/')
-  
+  print host, db_name
   db = web.database(dburl=dburl,
                     dbn=dbn,
                     host=host,
