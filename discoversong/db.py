@@ -2,22 +2,21 @@ import os
 import web
 
 import config
+import urlparse
+urlparse.uses_netloc.append('postgres')
 
 def get_db(dbname=config.DB_URL_NAME):
   
   dburl = os.environ[dbname]
-  dbn, remainder = dburl.split('://')
-  dbuser, dbpw_host, port_dbname = remainder.split(':')
-  dbpw, host = dbpw_host.split('@')
-  port, db_name = port_dbname.split('/')
+  db = urlparse.urlparse(dburl, scheme='postgres')
   
   db = web.database(dburl=dburl,
-                    dbn=dbn,
-                    host=host,
-                    port=port,
-                    user=dbuser,
-                    pw=dbpw,
-                    db=db_name)
+                    dbn=db.scheme,
+                    host=db.hostname,
+                    port=db.port,
+                    user=db.username,
+                    pw=db.password,
+                    db=db.path[1:])
   return db
 
 USER_TABLE = 'discodb.discoversong_user'
