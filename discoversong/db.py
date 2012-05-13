@@ -4,22 +4,33 @@ import web
 import config
 
 def get_db(dbname=config.DB_URL_NAME):
+  
   print 'get_db', dbname
+  
   dburl = os.environ[dbname]
+  
   print 'dburl', dburl
+  
   dbn, dburl = dburl.split('://')
+  
   print 'dbn', dbn, 'dburl', dburl
-  dbuser, dburl, port_etc = dburl.split(':')
-  print 'dbuser', dbuser, 'dburl', dburl, 'port_etc', port_etc
-  dburl = dburl + ':' + port_etc
-  print 'dburl', dburl
-  dbpw, dburl = dburl.split('@')
-  print 'dbpw', dbpw, 'dburl', dburl
-  host, db_name = dburl.split('/')
-  print 'host', host, 'db_name', db_name
+  
+  dbuser, dbpw_host, port_etc = dburl.split(':')
+  
+  print 'dbuser', dbuser, 'dbpw_host', dbpw_host, 'port_etc', port_etc
+  
+  dbpw, host = dbpw_host.split('@')
+  
+  print 'dbpw', dbpw, 'host', host
+  
+  port, db_name = port_etc.split('/')
+  
+  print 'port', port, 'db_name', db_name
+  
   db = web.database(dburl=dburl,
                     dbn=dbn,
                     host=host,
+                    port=port,
                     user=dbuser,
                     pw=dbpw,
                     db=db_name)
