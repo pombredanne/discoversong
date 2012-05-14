@@ -83,6 +83,11 @@ class root:
           address=make_unique_email(),
           token=access_token,
           secret=access_token_secret,
+          first_use=datetime.date.today(),
+          last_use=datetime.date.today(),
+          emails=0,
+          searches=0,
+          songs=0,
           prefs=BSONPostgresSerializer.from_dict({}))
         
         result = list(db.select(USER_TABLE, what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))[0]
