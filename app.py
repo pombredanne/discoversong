@@ -312,10 +312,10 @@ class idsong:
         stats.got_email(user_id)
         
         subject = input['subject']
-        print input['text']
+        body = input['text']
         
         try:
-          title, artist = parse(subject)
+          title, artist = parse(subject, body)
         except Exception, e:
           print str(e), e.__dict__
           return None
