@@ -55,7 +55,7 @@ def parse_shazam2(subject, body):
   title = body[title_start:title_end]
   
   artist_start = title_end + len(separator)
-  artist_end = body.find(terminator)
+  artist_end = body.find(terminator, artist_start)
   artist = body[artist_start:artist_end]
   
   return title, artist

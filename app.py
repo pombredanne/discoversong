@@ -313,6 +313,8 @@ class idsong:
         
         subject = input['subject']
         body = input['text']
+        print 'subject', subject
+        print 'body', body
         
         try:
           title, artist = parse(subject, body)
