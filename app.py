@@ -255,8 +255,6 @@ class save:
     prefs[Preferences.PlaylistToSaveTo] = input[Preferences.PlaylistToSaveTo]
     prefs[Preferences.AddToCollection] = input[Preferences.AddToCollection]
     
-    print 'got prefs from input:', prefs
-    
     return prefs
   
   @printerrors
@@ -270,10 +268,8 @@ class save:
     
     if action == 'save':
       prefs = BSONPostgresSerializer.to_dict(list(db.select(USER_TABLE, what='prefs', where="rdio_user_id=%i" % user_id))[0]['prefs'])
-      print 'old prefs', prefs
       new_prefs = self.get_prefs_from_input(input)
       prefs.update(new_prefs)
-      print 'new prefs', prefs
       db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
       
       raise web.seeother('/?saved=True')
