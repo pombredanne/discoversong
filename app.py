@@ -313,13 +313,11 @@ class idsong:
         
         subject = input['subject']
         body = input['text']
-        print 'subject', subject
-        print 'body', body
         
         try:
           title, artist = parse(subject, body)
-        except Exception, e:
-          print str(e), e.__dict__
+        except Exception as e:
+          print e.message
           return None
         
         print 'parsed artist', artist, 'title', title
@@ -391,6 +389,9 @@ class idsong:
           pass
         
         else:
+          
+          print 'adding to existing playlist'
+          
           rdio.call('addToPlaylist', {'playlist': playlist_key, 'tracks': ', '.join(track_keys)})
         
         if add_to_collection:
