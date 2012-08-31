@@ -360,10 +360,12 @@ class idsong:
         
         print 'found tracks', track_keys
         
-        if playlist_key in ['new', 'alwaysnew']:
+        playlists = rdio.call('getPlaylists')['result']['owned']
+        p_keys = [playlist['key'] for playlist in playlists]
+        p_names = [playlist['name'] for playlist in playlists]
+        
+        if playlist_key in ['new', 'alwaysnew'] or playlist_key not in p_keys:
           
-          p_names = [playlist['name'] for playlist in rdio.call('getPlaylists')['result']['owned']]
-
           new_name = generate_playlist_name(p_names)
           
           print 'creating new playlist', new_name
@@ -373,10 +375,9 @@ class idsong:
                                                 'tracks': ', '.join(track_keys)})
           new_key = result['result']['key']
           
-          if playlist_key == 'new':
+          if playlist_key == 'new' or playlist_key not in p_keys:
             
             print 'setting', new_key, 'as the playlist to use next time'
-            
             prefs[Preferences.PlaylistToSaveTo] = new_key
             db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
           
@@ -386,18 +387,14 @@ class idsong:
           
           print 'not adding to playlist'
           
-          pass
-        
         else:
           
           print 'adding to existing playlist'
-          
           rdio.call('addToPlaylist', {'playlist': playlist_key, 'tracks': ', '.join(track_keys)})
         
         if add_to_collection:
           
           print 'adding to collection'
-          
           rdio.call('addToCollection', {'keys': ', '.join(track_keys)})
         
         stats.found_songs(user_id, len(track_keys))
