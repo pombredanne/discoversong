@@ -364,6 +364,8 @@ class idsong:
         p_keys = [playlist['key'] for playlist in playlists]
         p_names = [playlist['name'] for playlist in playlists]
         
+        print playlist_key, 'existing playlists', p_keys
+        
         if playlist_key in ['new', 'alwaysnew'] or playlist_key not in p_keys:
           
           new_name = generate_playlist_name(p_names)
@@ -389,7 +391,7 @@ class idsong:
           
         else:
           
-          print 'adding to existing playlist'
+          print 'adding to existing playlist', playlist_key
           rdio.call('addToPlaylist', {'playlist': playlist_key, 'tracks': ', '.join(track_keys)})
         
         if add_to_collection:
