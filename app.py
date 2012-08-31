@@ -312,7 +312,7 @@ class idsong:
         stats.got_email(user_id)
         
         subject = input['subject']
-        print 'keys', input.keys()
+        print input['text']
         
         try:
           title, artist = parse(subject)
