@@ -53,6 +53,7 @@ render = web.template.render('templates/')
 def not_allowed(user_id):
   if len(config.WHITELIST_USERS) > 0:
     if user_id not in config.WHITELIST_USERS:
+      print 'not allowed because', user_id, 'not in', config.WHITELIST_USERS
       return True
   return False
 
@@ -212,13 +213,11 @@ class callback:
   
   @printerrors
   def GET(self):
-    print '!!!!! callback'
     # get the state from cookies and the query string
     request_token = web.cookies().get('rt')
     request_token_secret = web.cookies().get('rts')
     verifier = get_input()['oauth_verifier']
     # make sure we have everything we need
-    print 'request_token %s and request_token_secret %s and verifier %s' % (request_token, request_token_secret, verifier)
     if request_token and request_token_secret and verifier:
       # exchange the verifier and request token for an access token
       rdio = get_rdio_with_access(request_token, request_token_secret)
@@ -238,7 +237,6 @@ class logout:
   
   @printerrors
   def GET(self):
-    print '!!!!! logout'
     # clear all of our auth cookies
     web.setcookie('at', '', expires=-1)
     web.setcookie('ats', '', expires=-1)
