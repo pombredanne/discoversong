@@ -34,19 +34,28 @@ def parse_shazam(subject, body):
 def parse_shazam2(subject, body):
   
   expected_subject = 'I just used Shazam'
-  if subject.find(expected_subject) < 0:
-    raise ValueError('Still not Shazam!')
-  
   lead = 'I just used #Shazam to discover '
   separator = ' by '
   terminator = '.'
-  title_start = body.find(lead)
-  title_end = body.find(separator, title_start)
+
+  if subject.find(expected_subject) < 0:
+    raise ValueError('Shazam2 did not match expected subject')
   
+  if body.find(lead) < 0:
+    raise ValueError('Shazam2 did not find expected lead')
+  lead_start = body.find(lead)
+  if body.find(separator, lead_start) < 0:
+    raise ValueError('Shazam2 did not find expected separator')
+  separator_start = body.find(separator, lead_start)
+  if body.find(terminator, separator_start) < 0:
+    raise ValueError('Shazam2 did not find expected terminator')
+  
+  title_start = body.find(lead) + len(lead)
+  title_end = body.find(separator, title_start)
   title = body[title_start:title_end]
+  
   artist_start = title_end + len(separator)
   artist_end = body.find(terminator)
-  
   artist = body[artist_start:artist_end]
   
   return title, artist
