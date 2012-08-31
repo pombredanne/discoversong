@@ -24,6 +24,7 @@ $def with (env_message, users)
     <table border="0">
       <tr>
         <th>rdio_user_id</th>
+        <th>first_use</th>
         <th>last_use</th>
         <th>emails</th>
         <th>searches</th>
@@ -32,6 +33,7 @@ $def with (env_message, users)
     $for user in users
       <tr>
         <td>$:user['rdio_user_id']</td>
+        <td>$:user['first_use']</td>
         <td>$:user['last_use']</td>
         <td>$:user['emails']</td>
         <td>$:user['searches']</td>

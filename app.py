@@ -60,7 +60,7 @@ class root:
   
   @printerrors
   def GET(self):
-    
+    logging.info('!!!!! root')
     rdio, currentUser, user_id = get_rdio_and_current_user()
     
     if rdio and currentUser:
@@ -72,7 +72,7 @@ class root:
       
       db = get_db()
       
-      result = list(db.select(USER_TABLE, what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))
+      result = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))
       
       if len(result) == 0:
         access_token = web.cookies().get('at')
@@ -90,7 +90,7 @@ class root:
           songs=0,
           prefs=BSONPostgresSerializer.from_dict({}))
         
-        result = list(db.select(USER_TABLE, what='address, prefs, token, secret', where="rdio_user_id=%i" % user_id))[0]
+        result = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
       else:
         result = result[0]
         
@@ -116,7 +116,7 @@ class root:
           if fields_need_update(['prefs']):
             db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
           
-          result = list(db.select(USER_TABLE, what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
+          result = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
       
       stats.visited(user_id)
       
@@ -127,7 +127,7 @@ class root:
       if not result.has_key('prefs') or not result['prefs']:
         logging.info('resetting preferences')
         db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
-        result = list(db.select(USER_TABLE, what='address, prefs', where="rdio_user_id=%i" % user_id))[0]
+        result = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
       
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
@@ -183,7 +183,7 @@ class users:
         
         db = get_db()
         
-        users = db.select(USER_TABLE, what='rdio_user_id, last_use, emails, searches, songs')
+        users = db.select(USER_TABLE, what='*')
         
         return render.admin_users(env_message=get_environment_message(), users=users)
     
@@ -193,6 +193,7 @@ class login:
   
   @printerrors
   def GET(self):
+    logging.info('!!!!! login')
     # clear all of our auth cookies
     web.setcookie('at', '', expires=-1)
     web.setcookie('ats', '', expires=-1)
@@ -211,11 +212,13 @@ class callback:
   
   @printerrors
   def GET(self):
+    print '!!!!! callback'
     # get the state from cookies and the query string
     request_token = web.cookies().get('rt')
     request_token_secret = web.cookies().get('rts')
     verifier = get_input()['oauth_verifier']
     # make sure we have everything we need
+    print 'request_token %s and request_token_secret %s and verifier %s' % (request_token, request_token_secret, verifier)
     if request_token and request_token_secret and verifier:
       # exchange the verifier and request token for an access token
       rdio = get_rdio_with_access(request_token, request_token_secret)
@@ -235,6 +238,7 @@ class logout:
   
   @printerrors
   def GET(self):
+    print '!!!!! logout'
     # clear all of our auth cookies
     web.setcookie('at', '', expires=-1)
     web.setcookie('ats', '', expires=-1)
@@ -251,6 +255,7 @@ class save:
     prefs[Preferences.NoOrSearch] = Preferences.NoOrSearch in input.keys()
     prefs[Preferences.OneResult] = Preferences.OneResult in input.keys()
     prefs[Preferences.PlaylistToSaveTo] = input[Preferences.PlaylistToSaveTo]
+    prefs[Preferences.AddToCollection] = input[Preferences.AddToCollection]
     
     return prefs
   
@@ -294,7 +299,7 @@ class idsong:
     
     for to_address in to_addresses:
       
-      lookup = db.select(USER_TABLE, what='rdio_user_id, token, secret, prefs', where="address='%s'" % to_address)
+      lookup = db.select(USER_TABLE, where="address='%s'" % to_address)
       
       if len(lookup) == 1:
         result = lookup[0]
@@ -323,6 +328,7 @@ class idsong:
         or_search = prefs.get(Preferences.NoOrSearch, False)
         one_result = prefs.get(Preferences.OneResult, False)
         playlist_key = prefs[Preferences.PlaylistToSaveTo]
+        add_to_collection = prefs.get(Preferences.AddToCollection, False)
         
         never_or = 'false' if or_search else 'true'
         
@@ -377,8 +383,20 @@ class idsong:
           
           # else leave 'alwaysnew' to repeat this behavior every time
         
+        elif playlist_key == 'noplaylist':
+          
+          print 'not adding to playlist'
+          
+          pass
+        
         else:
           rdio.call('addToPlaylist', {'playlist': playlist_key, 'tracks': ', '.join(track_keys)})
+        
+        if add_to_collection:
+          
+          print 'adding to collection'
+          
+          rdio.call('addToCollection', {'keys': ', '.join(track_keys)})
         
         stats.found_songs(user_id, len(track_keys))
     

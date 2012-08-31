@@ -6,12 +6,14 @@ def editform(playlists, prefs):
   
   new_playlist = ('new', '*** create a new playlist')
   always_new = ('alwaysnew', '*** always create a new playlist')
+  no_playlist = ('noplaylist', '*** do not add to a playlist')
   playlist_options = [(playlist['key'], playlist['name']) for playlist in playlists]
-  args = [new_playlist, always_new]
+  args = [new_playlist, always_new, no_playlist]
   args.extend(playlist_options)
   
   or_search = prefs.get(Preferences.NoOrSearch, False)
   one_result = prefs.get(Preferences.OneResult, False)
+  add_to_collection = prefs.get(Preferences.AddToCollection, False)
   selected = prefs.get(Preferences.PlaylistToSaveTo, 'new')
   
   editform = form.Form(
@@ -21,6 +23,7 @@ def editform(playlists, prefs):
                     args=args),
       form.Checkbox(name=Preferences.NoOrSearch, value=or_search, checked=or_search, description='Strict search, no "or" fallback'),
       form.Checkbox(name=Preferences.OneResult, value=one_result, checked=one_result, description='Save only the best match'),
+      form.Checkbox(name=Preferences.AddToCollection, value=add_to_collection, checked=add_to_collection, description='Add to collection'),
       form.Button('button', value='save', html='Save'),
       form.Button('button', value='new_name', html='I want a new email address, mine sucks or has been compromised'),
   )

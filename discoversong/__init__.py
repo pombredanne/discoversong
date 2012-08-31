@@ -76,6 +76,7 @@ class Preferences(Enum):
   NoOrSearch = 'nor'
   OneResult = 'one'
   PlaylistToSaveTo = 'ply'
+  AddToCollection = 'col'
 
 NOT_SPECIFIED = object()
 

@@ -3,6 +3,7 @@ import web
 
 import config
 import urlparse
+
 urlparse.uses_netloc.append('postgres')
 
 def get_db(dbname=config.DB_URL_NAME):
