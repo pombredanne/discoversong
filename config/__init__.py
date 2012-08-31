@@ -13,4 +13,4 @@ elif ENVIRONMENT == 'production':
 elif ENVIRONMENT == 'localhost':
   from config.localhost import *
 
-ADMIN_USERS = [103]
+ADMIN_USERS = [103, 2586045]
