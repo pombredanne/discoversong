@@ -78,6 +78,25 @@ def parse_soundhound(subject, body):
   
   return title, artist
 
+def parse_musixmatch(subject, body):
+  
+  lead = 'I just used @musixmatch to discover '
+  separator = ' by '
+  terminator = ' #lyrics'
+  
+  if body.find(lead) < 0:
+    raise ValueError('Not MusixMatch!')
+  
+  title_start = body.find(lead) + len(lead)
+  title_end = body.find(separator, title_start)
+  title = body[title_start:title_end]
+  
+  artist_start = body.find(separator, title_end) + len(separator)
+  artist_end = body.find(terminator, artist_start)
+  artist = body[artist_start:artist_end]
+  
+  return title, artist
+
 def parse_unknown(subject, body):
   
   return subject, ''
@@ -88,6 +107,7 @@ def parse(subject, body):
              parse_shazam,
              parse_shazam2,
              parse_soundhound,
+             parse_musixmatch,
              parse_unknown] # this should always be last
   
   for parse in parsers:
