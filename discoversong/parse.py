@@ -97,6 +97,24 @@ def parse_musixmatch(subject, body):
   
   return title, artist
 
+def parse_trackid(subject, body):
+  lead = 'Check out '
+  separator = ' by '
+  terminator = '! I just found it using TrackID'
+  
+  if body.find(terminator) < 0:
+    raise ValueError('Not TrackID!')
+  
+  title_start = body.find(lead) + len(lead)
+  title_end = body.find(separator, title_start)
+  title = body[title_start:title_end]
+  
+  artist_start = title_end + len(separator)
+  artist_end = body.find(terminator, artist_start)
+  artist = body[artist_start:artist_end]
+  
+  return title, artist
+
 def parse_unknown(subject, body):
   
   return subject, ''
@@ -108,6 +126,7 @@ def parse(subject, body):
              parse_shazam2,
              parse_soundhound,
              parse_musixmatch,
+             parse_trackid,
              parse_unknown] # this should always be last
   
   for parse in parsers:
