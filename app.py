@@ -252,8 +252,8 @@ class save:
     
     prefs[Preferences.NoOrSearch] = Preferences.NoOrSearch in input.keys()
     prefs[Preferences.OneResult] = Preferences.OneResult in input.keys()
-    prefs[Preferences.PlaylistToSaveTo] = input[Preferences.PlaylistToSaveTo]
-    prefs[Preferences.AddToCollection] = input[Preferences.AddToCollection]
+    prefs[Preferences.PlaylistToSaveTo] = input[Preferences.PlaylistToSaveTo] if Preferences.PlaylistToSaveTo in input.keys() else 'new'
+    prefs[Preferences.AddToCollection] = Preferences.AddToCollection in input.keys()
     
     return prefs
   
