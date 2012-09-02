@@ -326,7 +326,7 @@ class idsong:
         
         or_search = prefs.get(Preferences.NoOrSearch, False)
         one_result = prefs.get(Preferences.OneResult, False)
-        playlist_key = prefs[Preferences.PlaylistToSaveTo]
+        playlist_key = prefs.get(Preferences.PlaylistToSaveTo, 'new')
         add_to_collection = prefs.get(Preferences.AddToCollection, False)
         
         never_or = 'false' if or_search else 'true'
