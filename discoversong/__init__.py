@@ -1,3 +1,4 @@
+import logging
 import traceback
 import sys
 import psycopg2
@@ -43,6 +44,8 @@ def printerrors(function):
     except web.Redirect:
       raise
     except:
+      print 'EXCEPTION'
+      logging.exception('EXCEPTION')
       traceback.print_exception(*sys.exc_info())
   return wrapped
 
