@@ -404,7 +404,7 @@ class idsong:
     return None
 
 def notfound():
-  return web.notfound('<html><head><title>discoversong:404</title></head><body style="margin: 0px;"><img src="http://i.imgur.com/0fVfB.jpg" height="100%" width="100%"/></body>')
+  return web.notfound('<html><head><title>discoversong:404</title></head><body style="margin: 0px;"><img src="static/Py77sf.jpg" height="100%" width="100%"/></body>')
 
 app.notfound = notfound
 
