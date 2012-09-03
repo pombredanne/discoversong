@@ -44,6 +44,7 @@ urls = (
   '/idsong', 'idsong',
   '/admin', 'admin',
   '/admin/users', 'users',
+  '/404', 'fourohfour',
 )
 
 app = web.application(urls, globals())
@@ -403,8 +404,13 @@ class idsong:
     
     return None
 
+class fourohfour:
+  @printerrors
+  def GET(self):
+    return '<html><head><title>discoversong:404</title></head><body style="margin: 0px;"><table border="0" height="100%" width="100%"><tr><td><img src="/static/404.jpg" style="display: block; margin-left: auto; margin-right: auto;"/></tr></td></table></body>'
+
 def notfound():
-  return web.seeother('/404.jpg')
+  return web.seeother('/404')
 
 app.notfound = notfound
 
