@@ -60,6 +60,31 @@ def parse_shazam2(subject, body):
   
   return title, artist
 
+def parse_shazam3(subject, body):
+  expected_subject_lead = 'I just used Shazam to tag '
+  separator = ' by '
+  terminator = '.'
+  
+  if subject.find(expected_subject_lead) < 0:
+    raise ValueError('not shazam3')
+  
+  title_start = subject.find(expected_subject_lead) + len(expected_subject_lead)
+  if subject.find(separator, title_start) < 0:
+    raise ValueError('not shazam3')
+  
+  title_end = subject.find(separator, title_start)
+  title = subject[title_start:title_end]
+  
+  artist_start = title_end + len(separator)
+  
+  if subject.find(terminator, artist_start) < 0:
+    raise ValueError('not shazam3')
+  
+  artist_end = subject.find(terminator, artist_start)
+  artist = subject[artist_start:artist_end]
+  
+  return title, artist
+
 def parse_soundhound(subject, body):
   
   expected_terminator = ' on #SoundHound'
@@ -124,6 +149,7 @@ def parse(subject, body):
   parsers = [parse_vcast,
              parse_shazam,
              parse_shazam2,
+             parse_shazam3,
              parse_soundhound,
              parse_musixmatch,
              parse_trackid,
