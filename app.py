@@ -337,7 +337,7 @@ class idsong:
           print 'searching strictly, no fallback to or'
         
         stats.made_search(user_id)
-        search_result = rdio.call('search', {'query': ' '.join([title, artist]), 'types': 'Track', 'never_or': never_or})
+        search_result = rdio.call('search', {'query': ' '.join([artist, title]), 'types': 'Track', 'never_or': never_or})
         
         track_keys = []
         name_artist_pairs_found = {}
