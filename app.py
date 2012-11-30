@@ -316,6 +316,9 @@ class idsong:
         subject = input['subject']
         body = input['text']
         
+        print 'email subject', subject
+        print 'email body', body
+        
         try:
           title, artist = parse(subject, body)
         except Exception as e:
