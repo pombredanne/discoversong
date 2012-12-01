@@ -22,7 +22,6 @@
 import datetime
 import json
 import os
-import pprint
 import sys
 import web
 import logging
@@ -30,9 +29,10 @@ import config
 
 from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message, stats
 from discoversong.db import get_db, USER_TABLE
-from discoversong.forms import get_admin_content, configform
+from discoversong.forms import get_admin_content, configform, editform
 from discoversong.parse import parse
-from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access, get_discoversong_user
+from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access, get_discoversong_user, get_db_prefs
+from discoversong.sources import SourceAppsManager
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -87,6 +87,7 @@ class root:
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
                              sourceapps=SourceAppsManager.ALL,
+                             editform=editform(playlists=rdio.call('getPlaylists')['result']['owned'], prefs=get_db_prefs(user_id)),
                              env_message=get_environment_message())
     else:
       return render.loggedout(env_message=get_environment_message())
@@ -220,7 +221,7 @@ class save:
     db = get_db()
     
     if action == 'save':
-      prefs = BSONPostgresSerializer.to_dict(list(db.select(USER_TABLE, what='prefs', where="rdio_user_id=%i" % user_id))[0]['prefs'])
+      prefs = get_db_prefs(user_id, db=db)
       new_prefs = self.get_prefs_from_input(input)
       prefs.update(new_prefs)
       db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
@@ -233,6 +234,15 @@ class save:
       
       db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=new_email)
     
+    elif action == 'save_config':
+      prefs = BSONPostgresSerializer.to_dict(list(db.select(USER_TABLE, what='prefs', where="rdio_user_id=%i" % user_id))[0]['prefs'])
+      for source_app in SourceAppsManager.ALL:
+        for capability in source_app.capabilities:
+          for required_value in capability.required_values():
+            if required_value.name in input:
+              prefs[required_value.name] = input[required_value.name]
+      db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
+
     raise web.seeother('/')
 
 class idsong:
@@ -367,7 +377,8 @@ class configger:
     appname = os.path.split(web.ctx['fullpath'])[-1]
     from discoversong.sources import SourceAppsManager
     source_app = SourceAppsManager.by_appname(appname)
-    return render.config(user=disco_user, sourceapp=source_app, configform=configform(source_app), env_message=get_environment_message())
+    prefs = BSONPostgresSerializer.to_dict(disco_user['prefs'])
+    return render.config(user=disco_user, sourceapp=source_app, savebuttonform=configform(source_app), prefs=prefs, env_message=get_environment_message())
 
 def html_centered_image(title, image_uri):
   return '<html><head><title>%(title)s</title></head><body style="margin: 0px;"><table border="0" height="100%%" width="100%%"><tr><td><img src="%(image_uri)s" style="display: block; margin-left: auto; margin-right: auto;"/></tr></td></table></body>' % {'title': title, 'image_uri': image_uri}

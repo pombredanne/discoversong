@@ -43,6 +43,12 @@ def get_rdio_and_current_user(access_token=NOT_SPECIFIED, access_token_secret=NO
     
     return None, None, None
 
+def get_db_prefs(user_id, db=None):
+  if db is None:
+    db = get_db()
+  prefs = BSONPostgresSerializer.to_dict(list(db.select(USER_TABLE, what='prefs', where="rdio_user_id=%i" % user_id))[0]['prefs'])
+  return prefs
+
 def get_discoversong_user(user_id):
   db = get_db()
 

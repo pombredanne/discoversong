@@ -1,4 +1,4 @@
-$def with (name, message, sourceapps, env_message)
+$def with (name, message, sourceapps, editform, env_message)
 <html>
   <head>
     <title>discoversong</title>
@@ -23,9 +23,22 @@ $def with (name, message, sourceapps, env_message)
     <h1>discoversong</h1>
     Welcome $name!
     $message
-    <p>Start by choosing what app you use:</p>
+    <ul>
+    <li>
+      <p>Start by choosing what app you use:</p>
+      
+      <ul>
       $for sourceapp in sourceapps:
-        <p><a href="/config/$:sourceapp.appname">$:sourceapp.applabel</a> (<a href="$:sourceapp.url" style="font-size: smaller;">website</a>)</p>
+        <li><a href="/config/$:sourceapp.appname">$:sourceapp.applabel</a> (<a href="$:sourceapp.url" style="font-size: smaller;">website</a>)</li>
+      </ul>
+    </li>
+    <li>
+      <p>Then tell us what to do when you identify a song:</p>
+      <form action="/save">
+      <p>$:editform.render()</p>
+      </form>
+    </li>
+    </ul>
     <a href="/logout">Log out of discoversong $:env_message</a>
     <p style="font-size: small;">Got feedback?  Send me an <a href="mailto:discoversong@outlook.com">email</a> or a <a href="https://twitter.com/intent/tweet?screen_name=eaefremov">twitter</a> message!</p>
   </body>

@@ -35,13 +35,17 @@ def get_parts(text, lead=None, separator=None, terminator=None, reversed=False):
   return (part1, part2) if not reversed else (part2, part1)
 
 def parse(subject, body):
-  
+  # circular import
+  from discoversong.source_apps.capabilities import Capabilities
+
   for source_app in SourceAppsManager.ALL + (SourceAppsManager.Unknown,):
-    try:
-      return source_app.parse(subject, body)
-    except Exception as ex:
-      print ex.message
-      continue
+    for cap in source_app.capabilities:
+      if type(cap) == Capabilities.Email:
+        try:
+          return cap.parse(subject, body)
+        except Exception as ex:
+          print ex.message
+          continue
   
   raise ValueError('at least the unknown parser should have worked!')
 

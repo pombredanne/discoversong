@@ -18,12 +18,12 @@ def editform(playlists, prefs):
   
   editform = form.Form(
       form.Dropdown(name=Preferences.PlaylistToSaveTo,
-                    description='Playlist to save songs to',
+                    description='Save songs to a playlist',
                     value=selected,
                     args=args),
-      form.Checkbox(name=Preferences.NoOrSearch, value=or_search, checked=or_search, description='Strict search, no "or" fallback'),
-      form.Checkbox(name=Preferences.OneResult, value=one_result, checked=one_result, description='Save only the best match'),
-      form.Checkbox(name=Preferences.AddToCollection, value=add_to_collection, checked=add_to_collection, description='Add to collection'),
+      form.Checkbox(name=Preferences.NoOrSearch, value=or_search, checked=or_search, description='Only save songs that match strictly on all terms'),
+      form.Checkbox(name=Preferences.OneResult, value=one_result, checked=one_result, description='Save only the single best match'),
+      form.Checkbox(name=Preferences.AddToCollection, value=add_to_collection, checked=add_to_collection, description='Add to your collection'),
       form.Button('button', value='save', html='Save'),
       form.Button('button', value='new_name', html='I want a new email address, mine sucks or has been compromised'),
   )
@@ -32,7 +32,17 @@ def editform(playlists, prefs):
 
 def configform(source_app):
   
-  configform = form.Form()
+  has_fields = False
+  for capability in source_app.capabilities:
+    if len(capability.required_values()) > 0:
+      has_fields = True
+      break
+  
+  if has_fields:
+    configform = form.Form(form.Button(name='button', value='save_config', html='Save'))
+  else:
+    configform = form.Form()
+  
   return configform()
 
 class Label(form.Input):

@@ -1,4 +1,4 @@
-$def with (user, sourceapp, configform, env_message)
+$def with (user, sourceapp, prefs, savebuttonform, env_message)
 <html>
   <head>
     <title>discoversong: config</title>
@@ -21,12 +21,17 @@ $def with (user, sourceapp, configform, env_message)
   </head>
   <body>
     <p>$:sourceapp.applabel can:</p>
-    <form action="/config/save">
+    <form action="/save">
     <ul>
     $for capability in sourceapp.capabilities:
       <li>$:capability.render(user)</li>
+      $if len(capability.required_values()) > 0:
+        <ul>
+          $for required_value in capability.required_values():
+            <li>$:required_value.render(prefs)</li>
+        </ul>
     </ul>
-    $:configform.render()
+    $:savebuttonform.render()
     </form>
     <a href="/logout">Log out of discoversong $:env_message</a>
     <p style="font-size: small;">Got feedback?  Send me an <a href="mailto:discoversong@outlook.com">email</a> or a <a href="https://twitter.com/intent/tweet?screen_name=eaefremov">twitter</a> message!</p>
