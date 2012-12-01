@@ -1,12 +1,15 @@
+import logging
 import os
 import sys
 import urllib2
 import web
+import datetime
+from discoversong.db import get_db, USER_TABLE
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from contrib.rdio import Rdio
 
-from discoversong import NOT_SPECIFIED
+from discoversong import NOT_SPECIFIED, make_unique_email, BSONPostgresSerializer, get_input
 
 import config
 
@@ -40,3 +43,62 @@ def get_rdio_and_current_user(access_token=NOT_SPECIFIED, access_token_secret=NO
     
     return None, None, None
 
+def get_discoversong_user(user_id):
+  db = get_db()
+
+  disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))
+  
+  if len(disco_user) == 0:
+    access_token = web.cookies().get('at')
+    access_token_secret = web.cookies().get('ats')
+    
+    db.insert(USER_TABLE,
+      rdio_user_id=user_id,
+      address=make_unique_email(),
+      token=access_token,
+      secret=access_token_secret,
+      first_use=datetime.date.today(),
+      last_use=datetime.date.today(),
+      emails=0,
+      searches=0,
+      songs=0,
+      prefs=BSONPostgresSerializer.from_dict({}))
+    
+    disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
+  else:
+    disco_user = disco_user[0]
+    
+    def none_or_empty(strg):
+      return strg is None or strg == ''
+    
+    def fields_need_update(field_names):
+      for field in field_names:
+        if not disco_user.has_key(field):
+          return True
+        if none_or_empty(disco_user[field]):
+          return True
+      return False
+    
+    if fields_need_update(['token', 'secret', 'address', 'prefs']):
+      
+      if fields_need_update(['token', 'secret']):
+        access_token = web.cookies().get('at')
+        access_token_secret = web.cookies().get('ats')
+        db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, secret=access_token_secret, token=access_token)
+      if fields_need_update(['address']):
+        db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=make_unique_email())
+      if fields_need_update(['prefs']):
+        db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
+      
+      disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
+  
+  message = ''
+  if 'saved' in get_input():
+    message = '  Saved your selections.'
+  
+  if not disco_user.has_key('prefs') or not disco_user['prefs']:
+    logging.info('resetting preferences')
+    db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
+    disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
+  
+  return disco_user, message

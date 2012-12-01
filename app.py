@@ -22,6 +22,7 @@
 import datetime
 import json
 import os
+import pprint
 import sys
 import web
 import logging
@@ -29,11 +30,19 @@ import config
 
 from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message, stats
 from discoversong.db import get_db, USER_TABLE
-from discoversong.forms import editform, get_admin_content
+from discoversong.forms import get_admin_content, configform
 from discoversong.parse import parse
-from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access
+from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access, get_discoversong_user
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+def make_config_urls():
+  urls = tuple()
+  # circular import
+  from discoversong.sources import SourceAppsManager
+  for source_app in SourceAppsManager.ALL:
+    urls += ('/config/%s' % source_app.appname, 'configger')
+  return urls
 
 urls = (
   '/', 'root',
@@ -46,7 +55,7 @@ urls = (
   '/admin/users', 'users',
   '/404', 'fourohfour',
   '/500', 'fivehundred',
-)
+) + make_config_urls()
 
 app = web.application(urls, globals())
 
@@ -71,71 +80,13 @@ class root:
       if not_allowed(user_id):
         raise web.seeother('/logout')
       
-      myPlaylists = rdio.call('getPlaylists')['result']['owned']
-      
-      db = get_db()
-      
-      result = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))
-      
-      if len(result) == 0:
-        access_token = web.cookies().get('at')
-        access_token_secret = web.cookies().get('ats')
-        
-        db.insert(USER_TABLE,
-          rdio_user_id=user_id,
-          address=make_unique_email(),
-          token=access_token,
-          secret=access_token_secret,
-          first_use=datetime.date.today(),
-          last_use=datetime.date.today(),
-          emails=0,
-          searches=0,
-          songs=0,
-          prefs=BSONPostgresSerializer.from_dict({}))
-        
-        result = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
-      else:
-        result = result[0]
-        
-        def none_or_empty(strg):
-          return strg is None or strg == ''
-        
-        def fields_need_update(field_names):
-          for field in field_names:
-            if not result.has_key(field):
-              return True
-            if none_or_empty(result[field]):
-              return True
-          return False
-        
-        if fields_need_update(['token', 'secret', 'address', 'prefs']):
-          
-          if fields_need_update(['token', 'secret']):
-            access_token = web.cookies().get('at')
-            access_token_secret = web.cookies().get('ats')
-            db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, secret=access_token_secret, token=access_token)
-          if fields_need_update(['address']):
-            db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=make_unique_email())
-          if fields_need_update(['prefs']):
-            db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
-          
-          result = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
-      
+      disco_user, message = get_discoversong_user(user_id)
       stats.visited(user_id)
-      
-      message = ''
-      if 'saved' in get_input():
-        message = '  Saved your selections.'
-      
-      if not result.has_key('prefs') or not result['prefs']:
-        logging.info('resetting preferences')
-        db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
-        result = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
-      
+      # circular import
+      from discoversong.sources import SourceAppsManager
       return render.loggedin(name=currentUser['firstName'],
                              message=message,
-                             to_address=result['address'],
-                             editform=editform(myPlaylists, BSONPostgresSerializer.to_dict(result['prefs'])),
+                             sourceapps=SourceAppsManager.ALL,
                              env_message=get_environment_message())
     else:
       return render.loggedout(env_message=get_environment_message())
@@ -407,6 +358,16 @@ class idsong:
         stats.found_songs(user_id, len(track_keys))
     
     return None
+
+class configger:
+  @printerrors
+  def GET(self):
+    rdio, currentUser, user_id = get_rdio_and_current_user()
+    disco_user, message = get_discoversong_user(user_id)
+    appname = os.path.split(web.ctx['fullpath'])[-1]
+    from discoversong.sources import SourceAppsManager
+    source_app = SourceAppsManager.by_appname(appname)
+    return render.config(user=disco_user, sourceapp=source_app, configform=configform(source_app), env_message=get_environment_message())
 
 def html_centered_image(title, image_uri):
   return '<html><head><title>%(title)s</title></head><body style="margin: 0px;"><table border="0" height="100%%" width="100%%"><tr><td><img src="%(image_uri)s" style="display: block; margin-left: auto; margin-right: auto;"/></tr></td></table></body>' % {'title': title, 'image_uri': image_uri}

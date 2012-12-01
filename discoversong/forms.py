@@ -30,6 +30,11 @@ def editform(playlists, prefs):
   
   return editform()
 
+def configform(source_app):
+  
+  configform = form.Form()
+  return configform()
+
 class Label(form.Input):
     def is_hidden(self):
         return False

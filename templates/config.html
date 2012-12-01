@@ -1,7 +1,7 @@
-$def with (name, message, sourceapps, env_message)
+$def with (user, sourceapp, configform, env_message)
 <html>
   <head>
-    <title>discoversong</title>
+    <title>discoversong: config</title>
 	<style type="text/css">
 		html {
 	    	background-attachment: fixed;
@@ -20,12 +20,14 @@ $def with (name, message, sourceapps, env_message)
 	</style>
   </head>
   <body>
-    <h1>discoversong</h1>
-    Welcome $name!
-    $message
-    <p>Start by choosing what app you use:</p>
-      $for sourceapp in sourceapps:
-        <p><a href="/config/$:sourceapp.appname">$:sourceapp.applabel</a> (<a href="$:sourceapp.url" style="font-size: smaller;">website</a>)</p>
+    <p>$:sourceapp.applabel can:</p>
+    <form action="/config/save">
+    <ul>
+    $for capability in sourceapp.capabilities:
+      <li>$:capability.render(user)</li>
+    </ul>
+    $:configform.render()
+    </form>
     <a href="/logout">Log out of discoversong $:env_message</a>
     <p style="font-size: small;">Got feedback?  Send me an <a href="mailto:discoversong@outlook.com">email</a> or a <a href="https://twitter.com/intent/tweet?screen_name=eaefremov">twitter</a> message!</p>
   </body>
