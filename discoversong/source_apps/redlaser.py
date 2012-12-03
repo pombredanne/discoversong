@@ -1,4 +1,4 @@
-from discoversong.source_apps import DiscoversongSourceApp
+from discoversong.source_apps import DiscoversongSourceApp, ParseError
 from discoversong.source_apps.capabilities import Capabilities
 
 def parse(subject, body):
@@ -9,7 +9,7 @@ def parse(subject, body):
   terminator = "' from RedLaser!"
   
   if not has_parts(subject, lead, separator, terminator):
-    raise ValueError('Not RedLaser!')
+    raise ParseError('Not RedLaser!')
   return get_parts(lead, separator, terminator, reversed=True)
 
 class RedLaserApp(DiscoversongSourceApp):

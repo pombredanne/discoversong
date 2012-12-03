@@ -9,7 +9,7 @@ from discoversong.db import get_db, USER_TABLE
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from contrib.rdio import Rdio
 
-from discoversong import NOT_SPECIFIED, make_unique_email, BSONPostgresSerializer, get_input
+from discoversong import NOT_SPECIFIED, make_unique_email, BSONPostgresSerializer, get_input, Preferences
 
 import config
 
@@ -17,10 +17,10 @@ def get_rdio():
   return Rdio((config.RDIO_CONSUMER_KEY, config.RDIO_CONSUMER_SECRET))
 
 def get_rdio_with_access(token, secret):
+  open('log', 'w').write('\n'.join(map(str, [type(token), token, type(secret), secret])))
   return Rdio((config.RDIO_CONSUMER_KEY, config.RDIO_CONSUMER_SECRET), (token, secret))
 
 def get_rdio_and_current_user(access_token=NOT_SPECIFIED, access_token_secret=NOT_SPECIFIED):
-    
   if access_token == NOT_SPECIFIED:
     access_token = web.cookies().get('at')
   if access_token_secret == NOT_SPECIFIED:
@@ -108,3 +108,12 @@ def get_discoversong_user(user_id):
     disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
   
   return disco_user, message
+
+def get_discoversong_user_by_twitter(twitter_name):
+  db = get_db()
+  disco_users = list(db.select(USER_TABLE))
+  for disco_user in disco_users:
+    prefs = BSONPostgresSerializer.to_dict(disco_user['prefs'])
+    if prefs.get(Preferences.TwitterName) == twitter_name:
+      return disco_user
+  return None

@@ -1,3 +1,4 @@
+from discoversong.source_apps import ParseError
 from discoversong.sources import SourceAppsManager
 
 def has_parts(text, lead=None, separator=None, terminator=None):
@@ -40,12 +41,26 @@ def parse(subject, body):
 
   for source_app in SourceAppsManager.ALL + (SourceAppsManager.Unknown,):
     for cap in source_app.capabilities:
-      if type(cap) == Capabilities.Email:
+      if isinstance(cap, Capabilities.Email):
         try:
           return cap.parse(subject, body)
-        except Exception as ex:
+        except ParseError as ex:
           print ex.message
           continue
   
   raise ValueError('at least the unknown parser should have worked!')
 
+def parse_tweet(tweet_body):
+  # circular import
+  from discoversong.source_apps.capabilities import Capabilities
+  for source_app in SourceAppsManager.ALL + (SourceAppsManager.Unknown,):
+    for cap in source_app.capabilities:
+      if isinstance(cap, Capabilities.Twitter):
+        try:
+          return cap.parse(tweet_body)
+        except ParseError as ex:
+          print ex.message
+          continue
+  
+  raise ValueError('at least the unknown parser should have worked')
+    

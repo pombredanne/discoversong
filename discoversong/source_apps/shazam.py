@@ -1,4 +1,4 @@
-from discoversong.source_apps import DiscoversongSourceApp
+from discoversong.source_apps import DiscoversongSourceApp, ParseError
 from discoversong.source_apps.capabilities import Capabilities
 
 def parse_1(subject, body):
@@ -9,7 +9,7 @@ def parse_1(subject, body):
   terminator = '.'
   
   if not has_parts(subject, lead, separator, terminator):
-    raise ValueError('Not Shazam!')
+    raise ParseError('Not Shazam!')
   return get_parts(subject, lead, separator, terminator)
 
 def parse_2(subject, body):
@@ -21,7 +21,7 @@ def parse_2(subject, body):
   terminator = '.'
 
   if subject != expected_subject or not has_parts(body, lead, separator, terminator):
-    raise ValueError('Not Shazam2!')
+    raise ParseError('Not Shazam!')
   return get_parts(body, lead, separator, terminator)
 
 def parse(subject, body):

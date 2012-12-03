@@ -1,6 +1,5 @@
 from web import form
 from discoversong import Preferences
-from discoversong.forms import Label
 
 class RequiredValue(object):
   name = None
@@ -44,11 +43,19 @@ class Capabilities(object):
     def required_values(self):
       return ()
     
-    def parse(self, **kwargs):
-      return self.parser(**kwargs)
+    def parse(self, *args, **kwargs):
+      return self.parser(*args, **kwargs)
+    
+    class ParseError(ValueError):
+      pass
   
   class Twitter(Capability):
     label = 'Post to Twitter'
+    parser = None
+    
+    def __init__(self, parser):
+      self.parser = parser
+    
     @classmethod
     def _render(cls, for_user):
       return 'mention <a href="https://twitter.com/dscvrsng">@dscvrsng</a> and'
@@ -56,3 +63,6 @@ class Capabilities(object):
     @staticmethod
     def required_values():
       return (RequiredValue(name=Preferences.TwitterName, description='tell us your Twitter name'),)
+    
+    def parse(self, *args, **kwargs):
+      return self.parser(*args, **kwargs)

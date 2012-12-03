@@ -1,4 +1,4 @@
-from discoversong.source_apps import DiscoversongSourceApp
+from discoversong.source_apps import DiscoversongSourceApp, ParseError
 from discoversong.source_apps.capabilities import Capabilities
 
 def parse(subject, body):
@@ -9,7 +9,7 @@ def parse(subject, body):
   separator = '" by '
   
   if not has_parts(subject, lead, separator):
-    raise ValueError('not VCast!')
+    raise ParseError('not VCast!')
   return get_parts(subject, lead, separator)
 
 class VcastSongidApp(DiscoversongSourceApp):

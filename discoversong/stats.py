@@ -27,3 +27,10 @@ def visited(user_id):
   db.query('UPDATE %s SET last_use = current_date WHERE rdio_user_id = %i' % (USER_TABLE, user_id))
   db.query('UPDATE %s SET visits = visits + 1' % STATS_TABLE)
   t.commit()
+
+def get_last_mention():
+  return get_db().select(STATS_TABLE, what='last_read_mention')[0]['last_read_mention']
+
+def read_to_mention(last_mention):
+  db = get_db()
+  db.query('UPDATE %s SET last_read_mention = %s' % (STATS_TABLE, last_mention))

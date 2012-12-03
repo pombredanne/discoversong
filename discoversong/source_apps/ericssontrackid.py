@@ -1,4 +1,4 @@
-from discoversong.source_apps import DiscoversongSourceApp
+from discoversong.source_apps import DiscoversongSourceApp, ParseError
 from discoversong.source_apps.capabilities import Capabilities
 
 def parse(subject, body):
@@ -9,7 +9,7 @@ def parse(subject, body):
   terminator = '! I just found it using TrackID'
   
   if not has_parts(body, lead, separator, terminator):
-    raise ValueError('Not TrackID!')
+    raise ParseError('Not TrackID!')
   return get_parts(body, lead, separator, terminator)
 
 class EricssonTrackIdApp(DiscoversongSourceApp):

@@ -4,3 +4,6 @@ class DiscoversongSourceApp(object):
   @classmethod
   def parse(subject, body):
     raise NotImplementedError()
+
+class ParseError(ValueError):
+  pass

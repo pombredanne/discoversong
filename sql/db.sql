@@ -20,6 +20,6 @@ CREATE TABLE discodb.stats
   emails bigint,
   searches bigint,
   songs bigint,
-  visits bigint
+  visits bigint,
+  last_read_mention text
 );
-
