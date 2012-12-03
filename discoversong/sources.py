@@ -15,7 +15,7 @@ class SourceAppsManager(object):
   RedLaser = RedLaserApp
   Unknown = UnknownApp
   
-  ALL = (Shazam, SoundHound, MusixMatch, EricssonTrackId, VcastSongid, RedLaser)
+  ALL = (SoundHound, Shazam, MusixMatch, EricssonTrackId, VcastSongid, RedLaser)
   
   @staticmethod
   def by_appname(appname):

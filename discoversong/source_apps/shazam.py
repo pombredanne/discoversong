@@ -30,8 +30,19 @@ def parse(subject, body):
   except:
     return parse_2(subject, body)
 
+def parse_twitter(twit_content):
+  # circular import
+  from discoversong.parse import has_parts, get_parts
+  lead = 'discover '
+  separator = ' by '
+  terminator = '.'
+  if not has_parts(twit_content, lead, separator, terminator):
+    raise ParseError('%s Not Shazam!' % twit_content)
+  title, artist = get_parts(twit_content, lead, separator, terminator)
+  return title, artist
+
 class ShazamApp(DiscoversongSourceApp):
-  capabilities = (Capabilities.Email(parse),)
+  capabilities = (Capabilities.Email(parse), Capabilities.Twitter(parse_twitter, app_specific_text='before the word "discover" '))
   appname = 'shazam'
   applabel = 'Shazam'
   url = 'http://www.shazam.com'

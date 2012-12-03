@@ -19,7 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import datetime
 import json
 import os
 import sys
@@ -27,12 +26,13 @@ import web
 import logging
 import config
 
-from discoversong import make_unique_email, generate_playlist_name, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message, stats
+from discoversong import make_unique_email, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message, stats
 from discoversong.db import get_db, USER_TABLE
 from discoversong.forms import get_admin_content, configform, editform
 from discoversong.parse import parse
 from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access, get_discoversong_user, get_db_prefs
 from discoversong.sources import SourceAppsManager
+from discoversong.well_formed_search import well_formed_search
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -288,9 +288,7 @@ class idsong:
         
         print 'parsed artist', artist, 'title', title
         
-        prefs = BSONPostgresSerializer.to_dict(result['prefs'])
-        
-        well_formed_search(rdio, user_id, prefs, artist, title)
+        well_formed_search(rdio, user_id, artist, title)
     
     return None
 

@@ -15,16 +15,13 @@ class RequiredValue(object):
 class Capability(object):
   label = None
   
-  @classmethod
-  def render(cls, for_user):
-    return '<strong>%s</strong>: configure it to %s' % (cls.label, cls._render(for_user))
+  def render(self, for_user):
+    return '<strong>%s</strong>: configure it to %s' % (self.label, self._render(for_user))
   
-  @staticmethod
-  def _render(for_user):
+  def _render(self, for_user):
     raise NotImplementedError()
   
-  @staticmethod
-  def required_values():
+  def required_values(self):
     raise NotImplementedError()
 
 class Capabilities(object):
@@ -36,8 +33,7 @@ class Capabilities(object):
     def __init__(self, parser):
       self.parser = parser
     
-    @classmethod
-    def _render(cls, for_user):
+    def _render(self, for_user):
       return 'send to <font style="color: green; font-size: larger;">%s</font>' % for_user['address']
     
     def required_values(self):
@@ -45,23 +41,19 @@ class Capabilities(object):
     
     def parse(self, *args, **kwargs):
       return self.parser(*args, **kwargs)
-    
-    class ParseError(ValueError):
-      pass
   
   class Twitter(Capability):
     label = 'Post to Twitter'
     parser = None
     
-    def __init__(self, parser):
+    def __init__(self, parser, app_specific_text=''):
       self.parser = parser
+      self.app_specific_text = app_specific_text
     
-    @classmethod
-    def _render(cls, for_user):
-      return 'mention <a href="https://twitter.com/dscvrsng">@dscvrsng</a> and'
+    def _render(self, for_user):
+      return '%smention <a href="https://twitter.com/dscvrsng">@dscvrsng</a> and' % self.app_specific_text
     
-    @staticmethod
-    def required_values():
+    def required_values(self):
       return (RequiredValue(name=Preferences.TwitterName, description='tell us your Twitter name'),)
     
     def parse(self, *args, **kwargs):

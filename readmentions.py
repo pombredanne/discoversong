@@ -3,7 +3,7 @@
 import os
 import tweepy
 from discoversong.parse import parse_tweet
-from discoversong.rdio import get_discoversong_user_by_twitter, get_rdio, get_db_prefs, get_rdio_and_current_user
+from discoversong.rdio import get_discoversong_user_by_twitter, get_db_prefs, get_rdio_and_current_user
 
 from discoversong.stats import get_last_mention, read_to_mention
 from discoversong.well_formed_search import well_formed_search

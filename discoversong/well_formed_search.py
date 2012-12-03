@@ -1,9 +1,11 @@
 import datetime
 from discoversong import BSONPostgresSerializer, Preferences, stats, generate_playlist_name
 from discoversong.db import USER_TABLE, get_db
+from discoversong.rdio import get_db_prefs
 
-def well_formed_search(rdio, user_id, prefs, artist, title):
+def well_formed_search(rdio, user_id, artist, title):
   db = get_db()
+  prefs = get_db_prefs(user_id, db=db)
   or_search = prefs.get(Preferences.NoOrSearch, False)
   one_result = prefs.get(Preferences.OneResult, False)
   playlist_key = prefs.get(Preferences.PlaylistToSaveTo, 'new')
