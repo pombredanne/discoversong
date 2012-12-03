@@ -55,7 +55,7 @@ class Capabilities(object):
       return '%smention <a href="https://twitter.com/dscvrsng">@dscvrsng</a> and' % self.app_specific_text
     
     def required_values(self):
-      return (RequiredValue(name='twitter_name', description='tell us your Twitter name'),)
+      return (RequiredValue(name='twitter_name', description='tell us your Twitter name', db_field=True),)
     
     def parse(self, *args, **kwargs):
       return self.parser(*args, **kwargs)
