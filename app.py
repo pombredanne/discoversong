@@ -238,6 +238,7 @@ class save:
       for source_app in SourceAppsManager.ALL:
         for capability in source_app.capabilities:
           for required_value in capability.required_values():
+            print 'checking', input.keys(), 'for', required_value.name, required_value.db_field, required_value.description
             if required_value.name in input:
               if not required_value.db_field:
                 prefs = get_db_prefs(user_id, db=db)

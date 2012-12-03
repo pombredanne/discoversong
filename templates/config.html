@@ -28,7 +28,7 @@ $def with (user, sourceapp, prefs, savebuttonform, env_message)
       $if len(capability.required_values()) > 0:
         <ul>
           $for required_value in capability.required_values():
-            <li>$:required_value.render(prefs)</li>
+            <li>$:required_value.render(user)</li>
         </ul>
     </ul>
     $:savebuttonform.render()

@@ -1,4 +1,5 @@
 from web import form
+from discoversong import BSONPostgresSerializer
 
 class RequiredValue(object):
   name = None
@@ -9,8 +10,12 @@ class RequiredValue(object):
     self.description = description
     self.db_field = db_field
   
-  def render(self, prefs):
-    value = prefs.get(self.name)
+  def render(self, user):
+    if not self.db_field:
+      prefs = BSONPostgresSerializer.to_dict(user['prefs'])
+      value = prefs.get(self.name)
+    else:
+      value = getattr(user, self.name, 'None')
     return self.description + ':' + form.Textbox(name=self.name, value=value).render()
 
 class Capability(object):
