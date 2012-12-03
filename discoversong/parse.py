@@ -50,14 +50,14 @@ def parse(subject, body):
   
   raise ValueError('at least the unknown parser should have worked!')
 
-def parse_tweet(tweet_body):
+def parse_twitter(twitter_body):
   # circular import
   from discoversong.source_apps.capabilities import Capabilities
   for source_app in SourceAppsManager.ALL + (SourceAppsManager.Unknown,):
     for cap in source_app.capabilities:
       if isinstance(cap, Capabilities.Twitter):
         try:
-          return cap.parse(tweet_body)
+          return cap.parse(twitter_body)
         except ParseError as ex:
           print ex.message
           continue

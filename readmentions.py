@@ -2,7 +2,7 @@
 
 import os
 import tweepy
-from discoversong.parse import parse_tweet
+from discoversong.parse import parse_twitter
 from discoversong.rdio import get_discoversong_user_by_twitter, get_db_prefs, get_rdio_and_current_user
 
 from discoversong.stats import get_last_mention, read_to_mention
@@ -27,11 +27,11 @@ for mention in mentions:
   if disco_user_row is None:
     print 'did not find user whose twitter name is supposed to be %s' % mention.author.screen_name
     continue
-  artist, title = parse_tweet(mention.text)
+  artist, title = parse_twitter(mention.text)
   print 'found artist, title', artist, title
   
   token, secret = str(disco_user_row['token']), str(disco_user_row['secret'])
   
   rdio, current_user, user_id = get_rdio_and_current_user(access_token=token, access_token_secret=secret)
-  well_formed_search(rdio, user_id, get_db_prefs(user_id), artist, title)
+  well_formed_search(rdio, user_id, artist, title)
   read_to_mention(mention.id)
