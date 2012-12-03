@@ -235,13 +235,16 @@ class save:
       db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=new_email)
     
     elif action == 'save_config':
-      prefs = BSONPostgresSerializer.to_dict(list(db.select(USER_TABLE, what='prefs', where="rdio_user_id=%i" % user_id))[0]['prefs'])
       for source_app in SourceAppsManager.ALL:
         for capability in source_app.capabilities:
           for required_value in capability.required_values():
             if required_value.name in input:
-              prefs[required_value.name] = input[required_value.name]
-      db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
+              if not required_value.db_field:
+                prefs = get_db_prefs(user_id, db=db)
+                prefs[required_value.name] = input[required_value.name]
+                db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
+              else:
+                db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, **{required_value.name: input[required_value.name]})
 
     raise web.seeother('/')
 

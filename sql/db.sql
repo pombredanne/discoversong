@@ -12,6 +12,7 @@ CREATE TABLE discodb.discoversong_user
   searches bigint,
   songs bigint,
   last_use date,
+  twitter_name text,
   CONSTRAINT pk PRIMARY KEY (id )
 );
 

@@ -1,12 +1,13 @@
 from web import form
-from discoversong import Preferences
 
 class RequiredValue(object):
   name = None
   description = None
-  def __init__(self, name, description):
+  db_field = False
+  def __init__(self, name, description, db_field=False):
     self.name = name
     self.description = description
+    self.db_field = db_field
   
   def render(self, prefs):
     value = prefs.get(self.name)
@@ -54,7 +55,7 @@ class Capabilities(object):
       return '%smention <a href="https://twitter.com/dscvrsng">@dscvrsng</a> and' % self.app_specific_text
     
     def required_values(self):
-      return (RequiredValue(name=Preferences.TwitterName, description='tell us your Twitter name'),)
+      return (RequiredValue(name='twitter_name', description='tell us your Twitter name'),)
     
     def parse(self, *args, **kwargs):
       return self.parser(*args, **kwargs)

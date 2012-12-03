@@ -80,7 +80,6 @@ class Preferences(Enum):
   OneResult = 'one'
   PlaylistToSaveTo = 'ply'
   AddToCollection = 'col'
-  TwitterName = 'twn'
 
 NOT_SPECIFIED = object()
 
