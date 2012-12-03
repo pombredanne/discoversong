@@ -45,7 +45,7 @@ def parse(subject, body):
         try:
           return cap.parse(subject, body)
         except ParseError as ex:
-          print ex.message
+          print ex
           continue
   
   raise ValueError('at least the unknown parser should have worked!')

@@ -1,10 +1,8 @@
 from discoversong.source_apps import DiscoversongSourceApp
 
 class UnknownApp(DiscoversongSourceApp):
-  @staticmethod
-  def parse(subject, body):
+  def parse(self, subject, body):
     return subject, ''
   
-  @staticmethod
-  def parse_tweet(tweet):
+  def parse_tweet(self, tweet):
     return tweet.replace('#', '').replace('@', '').replace('_', ' '), ''
