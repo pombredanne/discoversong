@@ -25,7 +25,7 @@ $def with (name, message, sourceapps, editform, env_message)
     $message
     <ul>
     <li>
-      <p>Start by choosing what app you use:</p>
+      <p>Start by configuring whichever app(s) you want to use:</p>
       
       <ul>
       $for sourceapp in sourceapps:
@@ -37,6 +37,7 @@ $def with (name, message, sourceapps, editform, env_message)
       <form action="/save">
       <p>$:editform.render()</p>
       </form>
+      <p>Now go out there and find some music you've never heard before, identify it, and when you get back to your computer, it'll be waiting for you in your Rdio collection!</p>
     </li>
     </ul>
     <a href="/logout">Log out of discoversong $:env_message</a>

@@ -29,6 +29,8 @@ for mention in mentions:
     continue
   artist, title = parse_twitter(mention.text)
   print 'found artist, title', artist, title
+  response = '@%s you found artist %s song %s' % (mention.author.screen_name, artist, title)
+  api.update_status(status=response, in_reply_to_status_id=mention.id)
   
   token, secret = str(disco_user_row['token']), str(disco_user_row['secret'])
   

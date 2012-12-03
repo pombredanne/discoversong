@@ -15,5 +15,5 @@ def parse(subject, body):
 class MusixMatchApp(DiscoversongSourceApp):
   capabilities = (Capabilities.Email(parse),)
   appname = 'musixmatch'
-  applabel = 'MusiXmatch'
+  applabel = 'MusiXmatch Lyrics'
   url = 'http://www.musixmatch.com'
