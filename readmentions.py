@@ -24,9 +24,12 @@ mentions = api.mentions(since_id=last_read)
 for mention in mentions:
   print 'found twitter name', mention.author.screen_name
   disco_user_row = get_discoversong_user_by_twitter(mention.author.screen_name)
-  
+  if disco_user_row is None:
+    print 'did not find user whose twitter name is supposed to be %s' % mention.author.screen_name
+    continue
   artist, title = parse_tweet(mention.text)
   print 'found artist, title', artist, title
+  
   token, secret = str(disco_user_row['token']), str(disco_user_row['secret'])
   
   rdio, current_user, user_id = get_rdio_and_current_user(access_token=token, access_token_secret=secret)
