@@ -24,10 +24,11 @@ def parse_twitter(twit_content):
   url_prefix = ', from #SoundHound '
   if not has_parts(twit_content, lead, separator, url_prefix):
     raise ParseError('%s Not SoundHound!' % twit_content)
-  title, artist_twit_name = get_parts(twit_content, lead, separator, url_prefix)
-  url = twit_content[twit_content.find(url_prefix) + len(url_prefix):]
-  tree = etree.HTML(requests.get(url).text)
-  artist = tree.xpath('//div[@class="artistName"]/a/text()')[0]
+  title, artist = get_parts(twit_content, lead, separator, url_prefix)
+  if artist.startswith('@'):
+    url = twit_content[twit_content.find(url_prefix) + len(url_prefix):]
+    tree = etree.HTML(requests.get(url).text)
+    artist = tree.xpath('//div[@class="artistName"]/a/text()')[0]
   return title, artist
 
 class SoundHoundApp(DiscoversongSourceApp):
