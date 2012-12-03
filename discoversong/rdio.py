@@ -17,7 +17,6 @@ def get_rdio():
   return Rdio((config.RDIO_CONSUMER_KEY, config.RDIO_CONSUMER_SECRET))
 
 def get_rdio_with_access(token, secret):
-  open('log', 'w').write('\n'.join(map(str, [type(token), token, type(secret), secret])))
   return Rdio((config.RDIO_CONSUMER_KEY, config.RDIO_CONSUMER_SECRET), (token, secret))
 
 def get_rdio_and_current_user(access_token=NOT_SPECIFIED, access_token_secret=NOT_SPECIFIED):
