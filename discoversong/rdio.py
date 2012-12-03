@@ -110,7 +110,7 @@ def get_discoversong_user(user_id):
 
 def get_discoversong_user_by_twitter(twitter_name):
   db = get_db()
-  disco_users = list(db.select(USER_TABLE, where='twitter_name=%s' % twitter_name))
+  disco_users = list(db.select(USER_TABLE, where='twitter_name="%s"' % twitter_name))
   if len(disco_users) > 0:
     return disco_users[0]
   return None
