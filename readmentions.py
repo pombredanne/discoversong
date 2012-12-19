@@ -38,10 +38,13 @@ for mention in mentions:
   
   rdio, current_user, user_id = get_rdio_and_current_user(access_token=token, access_token_secret=secret)
   found = well_formed_search(rdio, user_id, artist, title)
-  title, artist = found[0]
-  response = '"%(title)s" by %(artist)s was new to @%(mention)s' % {'mention': mention.author.screen_name,
-                                                                   'artist': artist,
-                                                                   'title': title}
-  api.update_status(status=response, in_reply_to_status_id=mention.id)
+  if len(found) > 0:
+    title, artist, url = found[0]
+    response = '"%(title)s" by %(artist)s was new to @%(mention)s %(link)s' % {
+      'mention': mention.author.screen_name,
+      'artist': artist,
+      'title': title,
+      'link': url}
+    api.update_status(status=response, in_reply_to_status_id=mention.id)
 
   read_to_mention(mention.id)

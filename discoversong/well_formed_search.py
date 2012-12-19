@@ -10,7 +10,7 @@ def well_formed_search(rdio, user_id, artist, title):
   one_result = prefs.get(Preferences.OneResult, False)
   playlist_key = prefs.get(Preferences.PlaylistToSaveTo, 'new')
   add_to_collection = prefs.get(Preferences.AddToCollection, False)
-  actual_name_artist_pairs = []
+  results = []
   never_or = 'false' if or_search else 'true'
   
   if never_or:
@@ -36,7 +36,7 @@ def well_formed_search(rdio, user_id, artist, title):
       
       track_key = possible_hit['key']
       track_keys.append(track_key)
-      actual_name_artist_pairs.append((name, artist_name))
+      results.append((name, artist_name, possible_hit['shortUrl']))
       if one_result:
         break
   
@@ -86,5 +86,5 @@ def well_formed_search(rdio, user_id, artist, title):
     rdio.call('addToCollection', {'keys': ', '.join(track_keys)})
   
   stats.found_songs(user_id, len(track_keys))
-  return actual_name_artist_pairs
+  return results
 
