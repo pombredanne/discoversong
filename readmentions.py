@@ -3,7 +3,7 @@
 import os
 import tweepy
 from discoversong.parse import parse_twitter
-from discoversong.rdio import get_discoversong_user_by_twitter, get_db_prefs, get_rdio_and_current_user
+from discoversong.rdio import get_discoversong_user_by_twitter, get_rdio_and_current_user
 
 from discoversong.stats import get_last_mention, read_to_mention
 from discoversong.well_formed_search import well_formed_search
@@ -27,9 +27,11 @@ for mention in mentions:
   if disco_user_row is None:
     print 'did not find user whose twitter name is supposed to be %s' % mention.author.screen_name
     continue
-  artist, title = parse_twitter(mention.text)
-  print 'found artist, title', artist, title
-  response = '@%s you found artist %s song %s' % (mention.author.screen_name, artist, title)
+  title, artist = parse_twitter(mention.text)
+  print 'found title, artist', title, artist
+  response = '"%(title)s" by %(artist)s was new to @%(mention)s' % {'mention': mention.author.screen_name,
+                                                                   'artist': artist,
+                                                                   'title': title}
   try:
     api.update_status(status=response, in_reply_to_status_id=mention.id)
   except:
