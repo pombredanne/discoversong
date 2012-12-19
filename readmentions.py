@@ -27,19 +27,21 @@ for mention in mentions:
   if disco_user_row is None:
     print 'did not find user whose twitter name is supposed to be %s' % mention.author.screen_name
     continue
-  title, artist = parse_twitter(mention.text)
-  print 'found title, artist', title, artist
-  response = '"%(title)s" by %(artist)s was new to @%(mention)s' % {'mention': mention.author.screen_name,
-                                                                   'artist': artist,
-                                                                   'title': title}
+  read_to_mention(mention.id)
   try:
-    api.update_status(status=response, in_reply_to_status_id=mention.id)
+    title, artist = parse_twitter(mention.text)
+    print 'found title, artist', title, artist
   except:
-    read_to_mention(mention.id)
     continue
   
   token, secret = str(disco_user_row['token']), str(disco_user_row['secret'])
   
   rdio, current_user, user_id = get_rdio_and_current_user(access_token=token, access_token_secret=secret)
-  well_formed_search(rdio, user_id, artist, title)
+  found = well_formed_search(rdio, user_id, artist, title)
+  title, artist = found[0]
+  response = '"%(title)s" by %(artist)s was new to @%(mention)s' % {'mention': mention.author.screen_name,
+                                                                   'artist': artist,
+                                                                   'title': title}
+  api.update_status(status=response, in_reply_to_status_id=mention.id)
+
   read_to_mention(mention.id)
