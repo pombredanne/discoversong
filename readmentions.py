@@ -40,7 +40,7 @@ for mention in mentions:
   found = well_formed_search(rdio, user_id, artist, title)
   if len(found) > 0:
     title, artist, url = found[0]
-    response = '"%(title)s" by %(artist)s was new to @%(mention)s %(link)s' % {
+    response = '"%(title)s" by %(artist)s %(link)s was new to @%(mention)s' % {
       'mention': mention.author.screen_name,
       'artist': artist,
       'title': title,
