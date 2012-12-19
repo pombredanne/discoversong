@@ -30,7 +30,7 @@ def parse(subject, body):
   except:
     return parse_2(subject, body)
 
-def parse_twitter(twit_content):
+def parse_twitter_1(twit_content):
   # circular import
   from discoversong.parse import has_parts, get_parts
   lead = 'discover '
@@ -40,6 +40,23 @@ def parse_twitter(twit_content):
     raise ParseError('%s Not Shazam!' % twit_content)
   title, artist = get_parts(twit_content, lead, separator, terminator)
   return title, artist
+
+def parse_twitter_2(twit_content):
+  # I just used #Shazam to tag Lights by Ellie Goulding. http://shz.am/t53069421
+  from discoversong.parse import has_parts, get_parts
+  lead = '#Shazam to tag '
+  separator = ' by '
+  terminator = '. http'
+  if not has_parts(twit_content, lead, separator, terminator):
+    raise ParseError('%s Not Shazam 2!' % twit_content)
+  title, artist = get_parts(twit_content, lead, separator, terminator)
+  return title, artist
+
+def parse_twitter(twit_content):
+  try:
+    return parse_twitter_1(twit_content)
+  except:
+    return parse_twitter_2(twit_content)
 
 class ShazamApp(DiscoversongSourceApp):
   capabilities = (Capabilities.Email(parse), Capabilities.Twitter(parse_twitter, app_specific_text='before the word "discover" '))
