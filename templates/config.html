@@ -1,40 +1,37 @@
-$def with (user, sourceapp, prefs, savebuttonform, env_message)
+$def with (user, prefs, capabilities, env_message, message)
 <html>
   <head>
     <title>discoversong: config</title>
-	<style type="text/css">
-		html {
-	    	background-attachment: fixed;
-	    	background-color: #3C3C94;
-	    	background-image: url("http://ak.rdio.com/media/images/base/body_bg.jpg");
-	    	background-repeat: repeat-x;
-	    	height: 100%;
-		}
-		body {
-			background: none repeat scroll 0 0 white;
-			border-radius: 5px 5px 5px 5px;
-			font-family: helvetica,arial,sans-serif;
-			margin: 50px;
-			padding: 25px;
-		}
-	</style>
+  <style type="text/css">
+    html {
+        background-attachment: fixed;
+        background-color: #3C3C94;
+        background-image: url("http://ak.rdio.com/media/images/base/body_bg.jpg");
+        background-repeat: repeat-x;
+        height: 100%;
+    }
+    body {
+      background: none repeat scroll 0 0 white;
+      border-radius: 5px 5px 5px 5px;
+      font-family: helvetica,arial,sans-serif;
+      margin: 50px;
+      padding: 25px;
+    }
+  </style>
   </head>
   <body>
-    <p>$:sourceapp.applabel can:</p>
+    <h1><a href="/">discoversong</a></h1>
+    $if message:
+      $message<br/><br/>
     <form action="/save">
-    <ul>
-    $for capability in sourceapp.capabilities:
-      <li>$:capability.render(user)</li>
-      $if len(capability.required_values()) > 0:
+    $for capability in capabilities:
+      Can your app <font style="font-size: large; color: blue;">$:capability.label</font>?  $:capability.render(user)<br/>
+      $if len(capability.config_options()) > 0:
         <ul>
-          $for required_value in capability.required_values():
-            <li>$:required_value.render(user)</li>
-        </ul>
-    </ul>
-    $:savebuttonform.render()
-    <p>
-      <a href="/">back</a>
-    </p>
+          $for config_option in capability.config_options():
+            <li>$:config_option.render(user)</li>
+        </ul><br/>
+    <button id="save" name="button" value="save_app_config">Save</button> or go <a href="/">back</a>
     </form>
     <a href="/logout">Log out of discoversong $:env_message</a>
     <p style="font-size: small;">Got feedback?  Send me an <a href="mailto:discoversong@outlook.com">email</a> or a <a href="https://twitter.com/intent/tweet?screen_name=eaefremov">twitter</a> message!</p>

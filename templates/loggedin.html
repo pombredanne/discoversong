@@ -2,44 +2,34 @@ $def with (name, message, sourceapps, editform, env_message)
 <html>
   <head>
     <title>discoversong</title>
-	<style type="text/css">
-		html {
-	    	background-attachment: fixed;
-	    	background-color: #3C3C94;
-	    	background-image: url("http://ak.rdio.com/media/images/base/body_bg.jpg");
-	    	background-repeat: repeat-x;
-	    	height: 100%;
-		}
-		body {
-			background: none repeat scroll 0 0 white;
-			border-radius: 5px 5px 5px 5px;
-			font-family: helvetica,arial,sans-serif;
-			margin: 50px;
-			padding: 25px;
-		}
-	</style>
+    <style type="text/css">
+      html {
+        background-attachment: fixed;
+        background-color: #3C3C94;
+        background-image: url("http://ak.rdio.com/media/images/base/body_bg.jpg");
+        background-repeat: repeat-x;
+        height: 100%;
+      }
+      body {
+        background: none repeat scroll 0 0 white;
+        border-radius: 5px 5px 5px 5px;
+        font-family: helvetica,arial,sans-serif;
+        margin: 50px;
+        padding: 25px;
+      }
+    </style>
   </head>
   <body>
     <h1>discoversong</h1>
     Welcome $name!
     $message
+    <p>Discoversong supports all these apps:</p>
     <ul>
-    <li>
-      <p>Start by configuring whichever app(s) you want to use:</p>
-      
-      <ul>
       $for sourceapp in sourceapps:
-        <li><a href="/config/$:sourceapp.appname">$:sourceapp.applabel</a> (<a href="$:sourceapp.url" style="font-size: smaller;">website</a>)</li>
-      </ul>
-    </li>
-    <li>
-      <p>Then tell us what to do when you identify a song:</p>
-      <form action="/save">
-      <p>$:editform.render()</p>
-      </form>
-      <p>Now go out there and find some music you've never heard before, identify it, and when you get back to your computer, it'll be waiting for you in your Rdio collection!</p>
-    </li>
+        <li><a href="$:sourceapp.url">$:sourceapp.applabel</a></li>
     </ul>
+    <p>Configuration instructions are <a href="/config" style="font-size: larger; color: green;">here</a>.</p>
+    <p>Now just go out there and find some music you've never heard before, identify it, and it'll be waiting for you on Rdio when you return!</p>
     <a href="/logout">Log out of discoversong $:env_message</a>
     <p style="font-size: small;">Got feedback?  Send me an <a href="mailto:discoversong@outlook.com">email</a> or a <a href="https://twitter.com/intent/tweet?screen_name=eaefremov">twitter</a> message!</p>
   </body>

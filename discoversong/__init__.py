@@ -43,9 +43,8 @@ def printerrors(function):
       return function(*a, **kw)
     except web.Redirect:
       raise
-    except:
-      print 'EXCEPTION'
-      logging.exception('EXCEPTION')
+    except Exception as e:
+      logging.exception(e.message)
       traceback.print_exception(*sys.exc_info())
   return wrapped
 

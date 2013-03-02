@@ -20,29 +20,20 @@
 # THE SOFTWARE.
 
 import json
+import logging
 import os
 import sys
 import web
-import logging
 import config
 
 from discoversong import make_unique_email, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message, stats
 from discoversong.db import get_db, USER_TABLE
-from discoversong.forms import get_admin_content, configform, editform
+from discoversong.forms import get_admin_content, editform
 from discoversong.parse import parse
 from discoversong.rdio import get_rdio, get_rdio_and_current_user, get_rdio_with_access, get_discoversong_user, get_db_prefs
-from discoversong.sources import SourceAppsManager
 from discoversong.well_formed_search import well_formed_search
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-def make_config_urls():
-  urls = tuple()
-  # circular import
-  from discoversong.sources import SourceAppsManager
-  for source_app in SourceAppsManager.ALL:
-    urls += ('/config/%s' % source_app.appname, 'configger')
-  return urls
 
 urls = (
   '/', 'root',
@@ -51,11 +42,12 @@ urls = (
   '/logout', 'logout',
   '/save', 'save',
   '/idsong', 'idsong',
+  '/config', 'configger',
   '/admin', 'admin',
   '/admin/users', 'users',
   '/404', 'fourohfour',
   '/500', 'fivehundred',
-) + make_config_urls()
+)
 
 app = web.application(urls, globals())
 
@@ -64,7 +56,6 @@ render = web.template.render('templates/')
 def not_allowed(user_id):
   if len(config.WHITELIST_USERS) > 0:
     if user_id not in config.WHITELIST_USERS:
-      print 'not allowed because', user_id, 'not in', config.WHITELIST_USERS
       return True
   return False
 
@@ -72,11 +63,9 @@ class root:
   
   @printerrors
   def GET(self):
-    logging.info('!!!!! root')
     rdio, currentUser, user_id = get_rdio_and_current_user()
     
     if rdio and currentUser:
-      
       if not_allowed(user_id):
         raise web.seeother('/logout')
       
@@ -100,9 +89,7 @@ class admin:
     rdio, currentUser, user_id = get_rdio_and_current_user()
     
     if rdio and currentUser:
-      
       if user_id in config.ADMIN_USERS:
-        
         input = get_input()
         
         if 'button' in input.keys():
@@ -110,7 +97,6 @@ class admin:
           db = get_db()
           
           if action == 'doitnow_go_on_killme':
-            
             if user_id in config.ADMIN_USERS:
               db.delete(USER_TABLE, where="rdio_user_id=%i" % user_id)
           
@@ -119,9 +105,9 @@ class admin:
               db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
           
           raise web.seeother('/admin')
+        
         else:
           admin=get_admin_content()
-          
           return render.admin(env_message=get_environment_message(), admin=admin)
       
     raise web.seeother('/')
@@ -133,13 +119,9 @@ class users:
     rdio, currentUser, user_id = get_rdio_and_current_user()
     
     if rdio and currentUser:
-      
       if user_id in config.ADMIN_USERS:
-        
         db = get_db()
-        
         users = db.select(USER_TABLE, what='*')
-        
         return render.admin_users(env_message=get_environment_message(), users=users)
     
     raise web.seeother('/')
@@ -148,7 +130,6 @@ class login:
   
   @printerrors
   def GET(self):
-    logging.info('!!!!! login')
     # clear all of our auth cookies
     web.setcookie('at', '', expires=-1)
     web.setcookie('ats', '', expires=-1)
@@ -208,7 +189,7 @@ class save:
     prefs[Preferences.OneResult] = Preferences.OneResult in input.keys()
     prefs[Preferences.PlaylistToSaveTo] = input[Preferences.PlaylistToSaveTo] if Preferences.PlaylistToSaveTo in input.keys() else 'new'
     prefs[Preferences.AddToCollection] = Preferences.AddToCollection in input.keys()
-    
+    logging.error('new prefs %r' % prefs)
     return prefs
   
   @printerrors
@@ -216,38 +197,42 @@ class save:
     
     input = get_input()
     action = input['button']
-    
+    logging.info(input.items())
     rdio, currentUser, user_id = get_rdio_and_current_user()
     db = get_db()
+    where_to_next = '/'
     
     if action == 'save':
       prefs = get_db_prefs(user_id, db=db)
       new_prefs = self.get_prefs_from_input(input)
       prefs.update(new_prefs)
       db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
-      
-      raise web.seeother('/?saved=True')
+      where_to_next += '?saved=True'
     
-    elif action == 'new_name':
-      
+    elif action == 'new_email':
       new_email = make_unique_email()
-      
       db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, address=new_email)
+      where_to_next += 'config?saved=True'
     
-    elif action == 'save_config':
+    elif action == 'save_app_config':
+      where_to_next += 'config?saved=True'
+      # circular import
+      from discoversong.sources import SourceAppsManager
+      from discoversong.source_apps.capabilities import Capabilities
       for source_app in SourceAppsManager.ALL:
         for capability in source_app.capabilities:
-          for required_value in capability.required_values():
-            print 'checking', input.keys(), 'for', required_value.name, required_value.db_field, required_value.description
-            if required_value.name in input:
-              if not required_value.db_field:
-                prefs = get_db_prefs(user_id, db=db)
-                prefs[required_value.name] = input[required_value.name]
-                db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
-              else:
-                db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, **{required_value.name: input[required_value.name]})
+          if isinstance(capability, Capabilities.Twitter):
+            for required_value in capability.config_options():
+              if required_value.name in input:
+                logging.error('%s: %s' % (required_value.name, input[required_value.name]))
+                if not required_value.store_as_db_field:
+                  prefs = get_db_prefs(user_id, db=db)
+                  prefs[required_value.name] = input[required_value.name]
+                  db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict(prefs))
+                else:
+                  db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, **{required_value.name: input[required_value.name]})
 
-    raise web.seeother('/')
+    raise web.seeother(where_to_next)
 
 class idsong:
 
@@ -259,8 +244,6 @@ class idsong:
     
     envelope = json.loads(input['envelope'])
     to_addresses = envelope['to']
-    
-    print 'received email to', to_addresses
     
     for to_address in to_addresses:
       
@@ -274,23 +257,16 @@ class idsong:
         
         rdio, current_user, user_id = get_rdio_and_current_user(access_token=access_token, access_token_secret=access_token_secret)
         
-        print 'found user', current_user['username']
-        
         stats.got_email(user_id)
         
         subject = input['subject']
         body = input['text']
         
-        print 'email subject', subject
-        print 'email body', body
-        
         try:
           title, artist = parse(subject, body)
         except Exception as e:
-          print e.message
+          logging.exception(e.message)
           return None
-        
-        print 'parsed artist', artist, 'title', title
         
         well_formed_search(rdio, user_id, artist, title)
     
@@ -301,11 +277,10 @@ class configger:
   def GET(self):
     rdio, currentUser, user_id = get_rdio_and_current_user()
     disco_user, message = get_discoversong_user(user_id)
-    appname = os.path.split(web.ctx['fullpath'])[-1]
-    from discoversong.sources import SourceAppsManager
-    source_app = SourceAppsManager.by_appname(appname)
     prefs = BSONPostgresSerializer.to_dict(disco_user['prefs'])
-    return render.config(user=disco_user, sourceapp=source_app, savebuttonform=configform(source_app), prefs=prefs, env_message=get_environment_message())
+    # circular import
+    from discoversong.sources import SourceAppsManager
+    return render.config(user=disco_user, prefs=prefs, capabilities=SourceAppsManager.all_capabilities(), env_message=get_environment_message(), message=message)
 
 def html_centered_image(title, image_uri):
   return '<html><head><title>%(title)s</title></head><body style="margin: 0px;"><table border="0" height="100%%" width="100%%"><tr><td><img src="%(image_uri)s" style="display: block; margin-left: auto; margin-right: auto;"/></tr></td></table></body>' % {'title': title, 'image_uri': image_uri}

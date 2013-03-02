@@ -1,3 +1,4 @@
+import logging
 from discoversong.source_apps import ParseError
 from discoversong.sources import SourceAppsManager
 
@@ -45,7 +46,7 @@ def parse(subject, body):
         try:
           return cap.parse(subject, body)
         except ParseError as ex:
-          print ex
+          logging.exception(ex.message)
           continue
   
   raise ValueError('at least the unknown parser should have worked!')
@@ -59,7 +60,7 @@ def parse_twitter(twitter_body):
         try:
           return cap.parse(twitter_body)
         except ParseError as ex:
-          print ex.message
+          logging.exception(ex.message)
           continue
   
   raise ValueError('at least the unknown parser should have worked')

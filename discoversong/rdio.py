@@ -98,6 +98,7 @@ def get_discoversong_user(user_id):
       disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
   
   message = ''
+  logging.error('%r' % get_input().items())
   if 'saved' in get_input():
     message = '  Saved your selections.'
   

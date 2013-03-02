@@ -25,23 +25,14 @@ def editform(playlists, prefs):
       form.Checkbox(name=Preferences.OneResult, value=one_result, checked=one_result, description='Save only the single best match'),
       form.Checkbox(name=Preferences.AddToCollection, value=add_to_collection, checked=add_to_collection, description='Add to your collection'),
       form.Button('button', value='save', html='Save'),
-      form.Button('button', value='new_name', html='I want a new email address, mine sucks or has been compromised'),
+      form.Button('button', value='new_email', html='I want a new email address, mine sucks or has been compromised'),
   )
   
   return editform()
 
-def configform(source_app):
+def configform():
   
-  has_fields = False
-  for capability in source_app.capabilities:
-    if len(capability.required_values()) > 0:
-      has_fields = True
-      break
-  
-  if has_fields:
-    configform = form.Form(form.Button(name='button', value='save_config', html='Save'))
-  else:
-    configform = form.Form()
+  configform = form.Form(form.Button(name='button', value='save', html='Save'))
   
   return configform()
 
