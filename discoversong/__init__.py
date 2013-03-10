@@ -37,17 +37,6 @@ def generate_playlist_name(existing_names):
     name = '%s %i' % (base_name, i)
   return name
 
-def printerrors(function):
-  def wrapped(*a, **kw):
-    try:
-      return function(*a, **kw)
-    except web.Redirect:
-      raise
-    except Exception as e:
-      logging.exception(e.message)
-      traceback.print_exception(*sys.exc_info())
-  return wrapped
-
 def get_input():
   try:
     return web.input()

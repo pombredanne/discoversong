@@ -26,7 +26,9 @@ import sys
 import web
 import config
 
-from discoversong import make_unique_email, printerrors, get_input, BSONPostgresSerializer, Preferences, get_environment_message, stats
+from eusful.errors import printerrors
+
+from discoversong import make_unique_email, get_input, BSONPostgresSerializer, Preferences, get_environment_message, stats
 from discoversong.db import get_db, USER_TABLE
 from discoversong.forms import get_admin_content, editform
 from discoversong.parse import parse

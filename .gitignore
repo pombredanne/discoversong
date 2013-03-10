@@ -1,4 +1,10 @@
+
 venv
 *.pyc
 .idea/workspace.xml
 .env
+*.csproj*
+*.sln
+*.suo
+obj
+Properties

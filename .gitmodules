@@ -1,0 +1,3 @@
+[submodule "eusful"]
+	path = eusful
+	url = git@github.com:eae/eusful.git
