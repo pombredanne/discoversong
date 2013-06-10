@@ -1,4 +1,4 @@
-$def with (name, message, sourceapps, editform, env_message)
+$def with (name, message, sourceapps, env_message)
 <html>
   <head>
     <title>discoversong</title>
@@ -28,7 +28,7 @@ $def with (name, message, sourceapps, editform, env_message)
       $for sourceapp in sourceapps:
         <li><a href="$:sourceapp.url">$:sourceapp.applabel</a></li>
     </ul>
-    <p>Configuration instructions are <a href="/config" style="font-size: larger; color: green;">here</a>.</p>
+    <p>Configure everything <a href="/config" style="font-size: larger; color: green;">here</a>.</p>
     <p>Now just go out there and find some music you've never heard before, identify it, and it'll be waiting for you on Rdio when you return!</p>
     <a href="/logout">Log out of discoversong $:env_message</a>
     <p style="font-size: small;">Got feedback?  Send me an <a href="mailto:discoversong@outlook.com">email</a> or a <a href="https://twitter.com/intent/tweet?screen_name=eaefremov">twitter</a> message!</p>

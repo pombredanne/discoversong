@@ -1,6 +1,25 @@
+import web.net
+import web.utils
+
 from web import form
 from discoversong import Preferences
 from discoversong.db import get_db, USER_TABLE, STATS_TABLE
+
+class UnorderedListForm(form.Form):
+  def render(self):
+    out = ''
+    out += self.rendernote(self.note)
+    out += '<ul>\n'
+    
+    for i in self.inputs:
+      html = web.utils.safeunicode(i.pre) + i.render() + self.rendernote(i.note) + web.utils.safeunicode(i.post)
+      if i.is_hidden():
+        out += '    <li style="display: none;"><td></td><td>%s</td></li>\n' % (html)
+      else:
+        out += '    <li>%s %s</li>\n' % (web.net.websafe(i.description), html)
+    out += "</ul>"
+    return out
+
 
 def editform(playlists, prefs):
   
@@ -16,16 +35,14 @@ def editform(playlists, prefs):
   add_to_collection = prefs.get(Preferences.AddToCollection, False)
   selected = prefs.get(Preferences.PlaylistToSaveTo, 'new')
   
-  editform = form.Form(
+  editform = UnorderedListForm(
       form.Dropdown(name=Preferences.PlaylistToSaveTo,
-                    description='Save songs to a playlist',
+                    description='Save to playlist',
                     value=selected,
                     args=args),
-      form.Checkbox(name=Preferences.NoOrSearch, value=or_search, checked=or_search, description='Only save songs that match strictly on all terms'),
+      form.Checkbox(name=Preferences.NoOrSearch, value=or_search, checked=or_search, description='Match strictly on all terms'),
       form.Checkbox(name=Preferences.OneResult, value=one_result, checked=one_result, description='Save only the single best match'),
-      form.Checkbox(name=Preferences.AddToCollection, value=add_to_collection, checked=add_to_collection, description='Add to your collection'),
-      form.Button('button', value='save', html='Save'),
-      form.Button('button', value='new_email', html='I want a new email address, mine sucks or has been compromised'),
+      form.Checkbox(name=Preferences.AddToCollection, value=add_to_collection, checked=add_to_collection, description='Add to collection'),
   )
   
   return editform()

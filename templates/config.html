@@ -1,4 +1,4 @@
-$def with (user, prefs, capabilities, env_message, message)
+$def with (user, prefs, capabilities, editform, env_message, message)
 <html>
   <head>
     <title>discoversong: config</title>
@@ -31,7 +31,12 @@ $def with (user, prefs, capabilities, env_message, message)
           $for config_option in capability.config_options():
             <li>$:config_option.render(user)</li>
         </ul><br/>
-    <button id="save" name="button" value="save_app_config">Save</button> or go <a href="/">back</a>
+    Once a song is identified, what should be done with it?<br/>
+    <table border="0">
+    $:editform.render()
+    </table>
+      <br/>
+    <button id="save" name="button" value="save">Save</button> or go <a href="/">back</a>
     </form>
     <a href="/logout">Log out of discoversong $:env_message</a>
     <p style="font-size: small;">Got feedback?  Send me an <a href="mailto:discoversong@outlook.com">email</a> or a <a href="https://twitter.com/intent/tweet?screen_name=eaefremov">twitter</a> message!</p>

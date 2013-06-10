@@ -18,6 +18,10 @@ def get_environment_message():
 
   return ('%s + %s' % (config.ENVIRONMENT, db_message)) if config.ENVIRONMENT != 'production' else ''
 
+def set_logging_level():
+  if config.ENVIRONMENT != 'production':
+    logging.root.setLevel('DEBUG')
+
 def make_unique_email():
   
   random_word = urllib.urlopen(SETGETGO_WORDER).read()

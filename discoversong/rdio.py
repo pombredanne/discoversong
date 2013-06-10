@@ -4,14 +4,16 @@ import sys
 import urllib2
 import web
 import datetime
+
+from eusful.for_web import get_input
+
+import config
+from discoversong import NOT_SPECIFIED, make_unique_email, BSONPostgresSerializer, Preferences
 from discoversong.db import get_db, USER_TABLE
+from discoversong.twitter import announce_new_user
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from contrib.rdio import Rdio
-
-from discoversong import NOT_SPECIFIED, make_unique_email, BSONPostgresSerializer, get_input, Preferences
-
-import config
 
 def get_rdio():
   return Rdio((config.RDIO_CONSUMER_KEY, config.RDIO_CONSUMER_SECRET))
@@ -70,6 +72,9 @@ def get_discoversong_user(user_id):
       prefs=BSONPostgresSerializer.from_dict({}))
     
     disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
+    count = int(list(db.query("SELECT count(*) from %s" % USER_TABLE))[0]['count'])
+    announce_new_user(count)
+    
   else:
     disco_user = disco_user[0]
     
@@ -97,17 +102,12 @@ def get_discoversong_user(user_id):
       
       disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
   
-  message = ''
-  logging.error('%r' % get_input().items())
-  if 'saved' in get_input():
-    message = '  Saved your selections.'
-  
   if not disco_user.has_key('prefs') or not disco_user['prefs']:
     logging.info('resetting preferences')
     db.update(USER_TABLE, where="rdio_user_id=%i" % user_id, prefs=BSONPostgresSerializer.from_dict({}))
     disco_user = list(db.select(USER_TABLE, where="rdio_user_id=%i" % user_id))[0]
   
-  return disco_user, message
+  return disco_user, ""
 
 def get_discoversong_user_by_twitter(twitter_name):
   db = get_db()

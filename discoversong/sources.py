@@ -2,7 +2,6 @@ from discoversong.source_apps.ericssontrackid import EricssonTrackIdApp
 from discoversong.source_apps.musixmatch import MusixMatchApp
 from discoversong.source_apps.soundhound import SoundHoundApp
 from discoversong.source_apps.shazam import ShazamApp
-from discoversong.source_apps.vcast_songid import VcastSongidApp
 from discoversong.source_apps.unknown import UnknownApp
 
 class SourceAppsManager(object):
@@ -10,10 +9,9 @@ class SourceAppsManager(object):
   SoundHound = SoundHoundApp
   MusixMatch = MusixMatchApp
   EricssonTrackId = EricssonTrackIdApp
-  VcastSongid = VcastSongidApp
   Unknown = UnknownApp
   
-  ALL = (SoundHound, Shazam, MusixMatch, EricssonTrackId, VcastSongid)
+  ALL = (SoundHound, Shazam, MusixMatch, EricssonTrackId)
   
   @staticmethod
   def by_appname(appname):
