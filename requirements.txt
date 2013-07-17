@@ -1,6 +1,5 @@
 Jinja2==2.6
 lxml==3.0.1
-tweepy==1.12
 requests==0.14.2
 Werkzeug==0.8.3
 distribute==0.6.24
@@ -10,3 +9,4 @@ web.py==0.36
 wsgiref==0.1.2
 bson==0.3.3
 eusful==0.6
+twython==1.2.3
