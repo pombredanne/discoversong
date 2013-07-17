@@ -9,4 +9,4 @@ web.py==0.36
 wsgiref==0.1.2
 bson==0.3.3
 eusful==0.6
-twython==1.2.3
+twython==3.0.0
