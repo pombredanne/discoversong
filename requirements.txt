@@ -2,7 +2,7 @@ Jinja2==2.6
 lxml==3.0.1
 requests==0.14.2
 Werkzeug==0.8.3
-distribute==0.6.24
+distribute==0.6.28
 gunicorn==0.14.2
 psycopg2==2.4.5
 web.py==0.36
