@@ -96,8 +96,7 @@ class Capabilities(object):
       return '%smention <a href="https://twitter.com/dscvrsng">@dscvrsng</a>' % self.app_specific_text
     
     def config_options(self):
-      return (ConfigTextValue(name='twitter_name', description='Your Twitter name so we know it\'s you: %s', store_as_db_field=True),
-              ConfigCheckbox(name='mention_in_reply', description='%s Hell yes I want a response on Twitter!'))
+      return (ConfigTextValue(name='twitter_name', description='You will be tweeting songs from: %s', store_as_db_field=True),)
     
     def config_options_dict(self):
       return dict([(c.name, c) for c in self.config_options()])

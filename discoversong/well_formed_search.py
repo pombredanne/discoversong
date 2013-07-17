@@ -1,4 +1,5 @@
 import datetime
+import twython
 from discoversong import BSONPostgresSerializer, Preferences, stats, generate_playlist_name
 from discoversong.db import USER_TABLE, get_db
 from discoversong.rdio import get_db_prefs, get_discoversong_user
@@ -72,14 +73,15 @@ def return_results(rdio, user_id, song_artist_url_list, from_tweet_id=None):
   
   stats.found_songs(user_id, len(song_artist_url_list))
   
-  can_mention_config = Capabilities.Twitter().config_options_dict()['mention_in_reply']
   twitter_name_config = Capabilities.Twitter().config_options_dict()['twitter_name']
   user, message = get_discoversong_user(user_id)
   
-  should_mention = can_mention_config.get_value(user)
-  
-  twitter_name = ('@' + twitter_name_config.get_value(user)) if should_mention else None
-  reply_to_tweet_id = from_tweet_id if should_mention else None
+  twitter_name = '@' + twitter_name_config.get_value(user)
+  reply_to_tweet_id = from_tweet_id
   
   song, artist, url, track_key = song_artist_url_list[0]
-  tweet_about_found_song(song, artist, url, mention_name=twitter_name, reply_to_tweet_id=reply_to_tweet_id)
+  try:
+    tweet_about_found_song(song, artist, url, mention_name=twitter_name, reply_to_tweet_id=reply_to_tweet_id)
+  except twython.TwythonError as twe:
+    if twe.error_code == 403:
+      pass
